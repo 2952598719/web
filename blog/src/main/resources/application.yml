@@ -1,0 +1,69 @@
+server:
+  port: 8081    # 指定该项目端口，因为8080太常用（比如windows上微信在用）所以换一个
+  servlet:
+    context-path: /api/blog
+
+
+spring:
+  application: 
+    name: blog
+  datasource:
+    url : jdbc:mysql://localhost:3306/blog
+    driverClassName : com.mysql.cj.jdbc.Driver
+    username : root
+    password : 111111
+    # password: e&jDch[=$IC&t3={}m
+  jackson:  # spring boot 3 很多东西都被弃用了，这里就不写了
+    date-format: yyyy-MM-dd HH:mm:ss        # 和java.utils.Data配合使用，在Data类和String之间序列化和反序列化
+    serialization:
+      indent-output: false                  # 是否给json使用换行和缩进，以使之更好阅读
+      fail-on-empty-beans: false            # 遇到空的或无法转换的对象，则序列化会生成一个空的json
+    defaultPropertyInclusion: NON_NULL      # 待序列化的类中，值为null的属性，就不序列化到json中了
+    deserialization:
+      fail-on-unknown-properties: false     # json中有未知属性时，就不放入反序列化的结果对象中了
+  # mvc:
+  #   throw-exception-if-no-handler-found: true
+  # web:
+  #   resources:
+  #     add-mappings: false
+  data:
+    redis:    # redis配置 
+      database: 1     # Redis数据库索引（默认为0）
+      host: 127.0.0.1 # Redis服务器地址
+      port: 6379      # Redis服务器连接端口  
+      # password: pAm#%uTa$pIM-1#FL,L,#]    # Redis服务器连接密码（默认为空）
+      timeout: 10s    # 连接超时时间
+      lettuce:
+          pool:
+              max-active: 200   # 连接池最大连接数
+              max-wait: -1ms    # 连接池最大阻塞等待时间（使用负值表示没有限制）
+              max-idle: 10      # 连接池中的最大空闲连接
+              min-idle: 0       # 连接池中的最小空闲连接
+
+mybatis:
+  mapper-locations: mapper/*.xml            # 指定xml放在resources/mapper下
+
+pagehelper:
+  helperDialect: mysql
+
+logging:  # 启用生产环境专用日志格式
+  config: classpath:logback-spring.xml  #指定项目启动的时，读取logback-spring.xml日志配置文件,文件名最好不要使用logback.xml
+  level: #配置指定包的路径下应用程序的日志记录和日志级别。
+    root: info
+    org:
+      springframework: warn
+  pattern:  # 输出的每条日志的格式
+    console: "%X{traceId} %X{userId} %d{yyyy-MM-dd}T%d{HH:mm:ss.SSS} ${LOG_LEVEL_PATTERN:%-1p} %-1logger{39} %m%n${LOG_EXCEPTION_CONVERSION_WORD:%wEx}"
+
+
+sa-token: 
+    token-name: Authorization   # token 名称（同时也是 cookie 名称）
+    timeout: 2592000      # token 有效期（单位：秒） 默认30天，-1 代表永久有效
+    active-timeout: -1    # token 最低活跃频率（单位：秒），如果 token 超过此时间没有访问系统就会被冻结，默认-1 代表不限制，永不冻结
+    is-concurrent: true   # 是否允许同一账号多地同时登录 （为 true 时允许一起登录, 为 false 时新登录挤掉旧登录）
+    is-share: true        # 在多人登录同一账号时，是否共用一个 token （为 true 时所有登录共用一个 token, 为 false 时每次登录新建一个 token）
+    token-style: uuid     # token 风格（默认可取值：uuid、simple-uuid、random-32、random-64、random-128、tik）
+    is-log: false         # 是否输出操作日志 
+    token-prefix: Bearer  # 前缀
+
+
