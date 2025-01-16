@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/Home.vue';
-// import UserCenter from '../views/UserCenter.vue';
+import UserCenter from '../views/UserCenter.vue';
 // import UserPage from '../views/UserPage.vue';
 import ArticlePage from '../views/ArticlePage.vue'
 import WriteArticle from '../views/WriteArticle.vue';
@@ -20,11 +20,11 @@ const blogRoutes = [
 		component: Home,
 	},
 	// 用户相关
-	// {
-	// 	path: '/center',
-	// 	name: 'UserCenter',
-	// 	component: UserCenter,
-	// },
+	{
+		path: '/center',
+		name: 'UserCenter',
+		component: UserCenter,
+	},
 	// {
 	// 	path: '/user/:userName',
 	// 	name: 'UserPage',

@@ -18,6 +18,12 @@ CREATE TABLE t_user(
     pass_word   CHAR(60)    NOT NULL COMMENT '密码的bcrypt加密',    -- 不用VARCHAR是为了向面试官说明VARCHAR和CHAR的不同点，虽然MySQL8貌似两者已经差不多了
     nick_name   VARCHAR(255) NOT NULL COMMENT '昵称',
     avatar_uid  BIGINT      COMMENT '头像uid',
+    gender      TINYINT     NOT NULL DEFAULT 0 COMMENT '性别，0为未知，1为男，2为女',
+    biography   VARCHAR(255) COMMENT '个人简介',
+    birthday    DATE        COMMENT '生日',
+    phone_number       VARCHAR(20) COMMENT '手机号',
+    email_address       VARCHAR(50) COMMENT '邮箱',
+    user_status TINYINT     NOT NULL DEFAULT 0 COMMENT '用户状态，0为正常，1为已注销',
     create_time DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     update_time DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY(user_uid),
