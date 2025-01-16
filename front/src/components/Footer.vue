@@ -4,7 +4,8 @@
 			<div class="contact">
 				<p>联系方式：{{ phone }}</p>
 				<p>邮箱：{{ email }}</p>
-				<p>Gitee：<a :href="giteeUrl" target="_blank">{{ giteeUsername }}</a></p>
+				<p>Github：<a :href="githubUrl" target="_blank">{{ username }}</a></p>
+				<p>Gitee：<a :href="giteeUrl" target="_blank">{{ username }}</a></p>
 			</div>
 			<div class="record">
 				<p>备案号：{{ recordNumber }}</p>
@@ -18,8 +19,9 @@ import { ref } from 'vue';
 
 const phone = ref('17782913637');
 const email = ref('2952598719@qq.com');
-const giteeUsername = ref('orosirian');
-const giteeUrl = ref(`https://gitee.com/${giteeUsername.value}`);
+const username = ref('orosirian');
+const githubUrl = ref(`https://github.com/2952598719`)
+const giteeUrl = ref(`https://gitee.com/${username.value}`);
 const recordNumber = ref('闽ICP备2024060507');
 </script>
 

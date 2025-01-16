@@ -3,14 +3,14 @@
 # 一、基础
 - [x] 注册登录
 - [x] WriteArticle
-- [ ] ArticlePage、删、改
-- [ ] PageNotFound
+- [x] ArticlePage、改
+- [x] PageNotFound
 - [ ] ArticleList组件->ArticleListPage
 - [ ] Home
 
 # 二、功能
 - [ ] UserCenter：相关个人信息、注销
-- [ ] UserPage（点击头像进入UserPage）
+- [ ] UserPage（点击头像进入UserPage）：个人资料（侧边）、文章列表、删除文章
 - [ ] 评论
 - [ ] 赞踩、阅读量
 - [ ] 收藏（类似于B站Header的五角星作为入口）

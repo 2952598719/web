@@ -2,6 +2,7 @@ package top.orosirian.blog.utils.exception;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -85,6 +86,16 @@ public class GlobalExceptionHandler {
         return SaResult.ok().setCode(ResultCodeEnum.PARAMETER_NOT_VALID.getCode()).setMsg(realMessage[realMessage.length - 1]);
     }
 
+    // 404：路径参数格式不对，MethodArgumentTypeMismatchException
+    @ResponseStatus(HttpStatus.OK)
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public SaResult handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
+        String comprehensibleMessage = "路径参数格式不正确，没有通过校验";
+        log.warn(formatException(e, comprehensibleMessage, e.getMessage(), false));
+    
+        String[] realMessage = e.getLocalizedMessage().split("default message ");
+        return SaResult.ok().setCode(ResultCodeEnum.PARAMETER_NOT_VALID.getCode()).setMsg(realMessage[realMessage.length - 1]);
+    }
 
 
     // 400：兜底

@@ -20,29 +20,36 @@ import Vditor from 'vditor'
 import 'vditor/dist/index.css';
 import { ElMessage } from 'element-plus';
 import { useRoute, useRouter } from 'vue-router';
-
-import { uploadImageApi } from '../apis/apiImage';
-import { postArticleApi } from '../apis/apiArticle';
 import { Edit } from '@element-plus/icons-vue';
 
-onMounted(() => {
-    vditor.value = new Vditor('vditor', {
-        height: '500px',
-        // width: '50vw'
-        mode: 'sv',
-        upload: {
-            handler: async (files) => {
-                return insertImage(files)
+import { uploadImageApi } from '../apis/apiImage';
+import { postArticleApi, putArticleApi, getArticleApi } from '../apis/apiArticle';
+import { useUserStore } from '../utils/stores';
+
+onMounted(async () => {
+    if(userStoreObject.isLogin) {
+        vditor.value = new Vditor('vditor', {
+            height: '500px',
+            // width: '50vw'
+            mode: 'sv',
+            upload: {
+                handler: async (files) => {
+                    return insertImage(files)
+                }
+            },
+            after() {
+                if (articleUid != null) {
+                    getThisArticle(articleUid)
+                } else {
+                    vditor.value.setValue('\n')
+                }
             }
-        },
-        after() {
-            if (articleUid != null) {
-                getThisArticle(articleUid)
-            } else {
-                vditor.value.setValue('\n')
-            }
-        }
-    })
+        })
+    } else {
+        router.push("/PageNotFound")
+    }
+
+    
 })
 
 // 路由
@@ -55,6 +62,7 @@ const vditor = ref()
 
 // 其他信息
 const title = ref('')
+const userStoreObject = useUserStore()
 
 // 函数
 async function insertImage(files) {
@@ -72,16 +80,11 @@ async function insertImage(files) {
 
 async function getThisArticle(articleUid) {
     try {
-        const articleResponse = await getPermitArticleApi(articleUid)
-        const tagResponse = await getArticleTagsApi(articleUid)
+        const articleResponse = await getArticleApi(articleUid)
         if (articleResponse.code === 99999) {
             const article = articleResponse.data
-            const tags = tagResponse.data
-            tagStr.value = tags.join(", ")
             title.value = article.title
-            selectedCategory.value = article.categoryId
             vditor.value.setValue(article.articleContent)
-            isDraft.value = (article.articleType === 0)
         } else {
             console.error('Error fetching article:', error);
         }
@@ -110,7 +113,7 @@ async function submit() {
         if (articleUid == null) {
             submitResponse.value = await postArticleApi(data)
         } else {
-            // submitResponse.value = await putArticleApi(articleUid, data)
+            submitResponse.value = await putArticleApi(articleUid, data)
         }
         if (submitResponse.value.code === 99999) {
             ElMessage.success("成功发表文章")

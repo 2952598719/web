@@ -6,7 +6,6 @@ import { checkLoginApi } from '@/apis/apiUser';
 async function processUserBasicInfo(): Promise<{ userName: string; avatarUrl: string } | null> {
     const token = getToken();
     if (!token) {
-        console.log('token不存在');
         return null;
     } else {
         try {
@@ -32,15 +31,15 @@ export const useUserStore = defineStore('auth', () => {
     const avatarUrl = ref<string | null>(null);
 
     // Getter（计算属性）
-    const isLogin = computed(() => !!userName.value);
-
+    const isLogin = ref(false);
     // Actions
     async function update() {
         try {
             const userBasicInfo = await processUserBasicInfo();
-            if (userBasicInfo) {
+            if (userBasicInfo != null) {
                 userName.value = userBasicInfo.userName;
                 avatarUrl.value = userBasicInfo.avatarUrl;
+                isLogin.value = true;
             }
         } catch (error) {
             userName.value = null;
@@ -51,6 +50,7 @@ export const useUserStore = defineStore('auth', () => {
     function logout() {
         userName.value = null;  // isLogin的值通过这一条连带修改
         avatarUrl.value = null;
+        isLogin.value = false;
     }
 
     return {
