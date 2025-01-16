@@ -2,6 +2,14 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="top.orosirian.blog.mapper.ArticleMapper">
 
+    <resultMap id="ArticleBriefMap" type="top.orosirian.blog.entity.vo.ArticleBriefVO">
+        <id property="articleUid" column="article_uid" />
+        <result property="userName" column="user_name" />
+        <result property="nickName" column="nick_name" />
+        <result property="title" column="title" />
+        <result property="createTime" column="create_time" />
+    </resultMap>
+
     <resultMap id="ArticleDetailMap" type="top.orosirian.blog.entity.vo.ArticleDetailVO">
         <id property="articleUid" column="article_uid" />
         <result property="userName" column="user_name" />
@@ -27,6 +35,13 @@
         SELECT a.article_uid, u.user_name, u.nick_name, a.title, a.article_content, a.create_time, a.update_time
         FROM t_article AS a LEFT JOIN t_user AS u ON a.user_uid = u.user_uid
         WHERE a.article_uid = #{articleUid}
+    </select>
+
+    <select id="selectArticleList" resultMap="ArticleBriefMap">
+        SELECT a.article_uid, u.user_name, u.nick_name, a.title, a.create_time
+        FROM t_article AS a LEFT JOIN t_user AS u ON a.user_uid = u.user_uid
+        WHERE article_type = 1
+        ORDER BY a.create_time DESC
     </select>
 
     <select id="isArticleExist">

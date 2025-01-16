@@ -7,13 +7,17 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.github.pagehelper.PageInfo;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import jakarta.validation.Valid;
 import top.orosirian.blog.entity.param.ArticleParam;
+import top.orosirian.blog.entity.vo.ArticleBriefVO;
 import top.orosirian.blog.entity.vo.ArticleDetailVO;
 import top.orosirian.blog.service.ArticleService;
 import top.orosirian.blog.utils.ResultCodeEnum;
@@ -45,6 +49,13 @@ public class ArticleController {
     public SaResult getArticle(@PathVariable @Valid Long articleUid) {
         ArticleDetailVO article = articleService.searchArticle(articleUid);
         return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "获取文章成功", article);  
+    }
+
+    @GetMapping("/articles/home")
+    public SaResult getArticleList(@RequestParam Integer currentPage, @RequestParam Integer pageSize) {
+        PageInfo<ArticleBriefVO> result = articleService.searchArticleList(currentPage, pageSize);
+        return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "搜索文章列表成功", result);
+ 
     }
 
 

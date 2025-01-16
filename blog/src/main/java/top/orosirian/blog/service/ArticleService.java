@@ -1,10 +1,16 @@
 package top.orosirian.blog.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+
 import cn.hutool.core.lang.Snowflake;
 import lombok.extern.slf4j.Slf4j;
+import top.orosirian.blog.entity.vo.ArticleBriefVO;
 import top.orosirian.blog.entity.vo.ArticleDetailVO;
 import top.orosirian.blog.mapper.ArticleMapper;
 import top.orosirian.blog.utils.ResultCodeEnum;
@@ -41,6 +47,14 @@ public class ArticleService {
 
         log.info("获取文章成功");
         return article;
+    }
+
+    public PageInfo<ArticleBriefVO> searchArticleList(Integer currentPage, Integer pageSize) {
+        PageHelper.startPage(currentPage, pageSize);
+        List<ArticleBriefVO> list = articleMapper.selectArticleList();
+        PageInfo<ArticleBriefVO> pageInfo = new PageInfo<>(list);
+        log.info("获取第{}页文章成功", currentPage);
+        return pageInfo;
     }
     
 }

@@ -5,8 +5,7 @@
 - [x] WriteArticle
 - [x] ArticlePage、改
 - [x] PageNotFound
-- [ ] ArticleList组件->ArticleListPage
-- [ ] Home
+- [x] ArticleList组件、Home
 
 # 二、功能
 - [ ] UserCenter：相关个人信息、注销
@@ -17,6 +16,7 @@
 
 # 三、细化
 - [ ] 分类与标签
+- [ ] 文章简介
 - [ ] 文章头图
 - [ ] 主页背景（只有几张可以选择）
 - [ ] 关注（个人主页可看关注和粉丝）

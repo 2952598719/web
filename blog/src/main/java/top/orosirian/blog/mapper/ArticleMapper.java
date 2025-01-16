@@ -1,7 +1,10 @@
 package top.orosirian.blog.mapper;
 
+import java.util.List;
+
 import org.apache.ibatis.annotations.Mapper;
 
+import top.orosirian.blog.entity.vo.ArticleBriefVO;
 import top.orosirian.blog.entity.vo.ArticleDetailVO;
 
 @Mapper
@@ -12,6 +15,8 @@ public interface ArticleMapper {
     void updateArticle(Long articleUid, String title,  String articleContent, Integer articleType);
 
     ArticleDetailVO selectArticle(Long articleUid);
+
+    List<ArticleBriefVO> selectArticleList();
 
     boolean isArticleExist(Long articleUid);
 

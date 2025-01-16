@@ -14,6 +14,11 @@ const blogRoutes = [
 		name: 'Home',
 		component: Home,
 	},
+	{
+		path: '/page/:page',
+		name: 'HomeWithPage',
+		component: Home,
+	},
 	// 用户相关
 	// {
 	// 	path: '/center',

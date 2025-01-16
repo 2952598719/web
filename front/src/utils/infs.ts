@@ -10,6 +10,10 @@ export interface RegisterForm extends LoginForm{
 }
 
 export interface ArticleForm {
+    articleUid: string;
+    userName: string;
+    nickName: string;
     title: string;
     articleContent: string;
+    createTime: string;
 }

@@ -33,6 +33,17 @@ export async function getArticleApi(articleUid: string) {
 
 }
 
-
+export async function getArticleListApi(currentPage: number, pageSize: number, searchType: string, searchParam: string) {
+    const response = await vanillaRequest({
+        method: 'GET',
+        url: '/articles/' + searchType,
+        params: {
+            currentPage: currentPage,
+            pageSize: pageSize,
+            // searchParam: searchParam
+        },
+    })
+    return response.data
+}
 
 

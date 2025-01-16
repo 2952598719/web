@@ -1,14 +1,25 @@
 <template>
+
+    <ArticleList :page="page"/>
+
     <el-button v-if="userStoreObject.isLogin" class="fixed-button" type="primary" title="plus"
         @click="gotoArticleWrite()">+</el-button>
 </template>
 
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
+import { ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '../utils/stores';
 
+import ArticleList from '../components/ArticleList.vue';
+
+const route = useRoute()
 const router = useRouter()
+const page = ref<number>(parseInt(route.params.page as string))
+if (!page.value) {
+    page.value = 1
+}
 const userStoreObject = useUserStore()
 function gotoArticleWrite() {
     router.push("/write")
