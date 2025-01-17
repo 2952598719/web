@@ -2,33 +2,78 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="top.orosirian.blog.mapper.UserMapper">
 
+    <resultMap id="UserInfoMap" type="top.orosirian.blog.entity.vo.UserInfoVO">
+        <result property="userName" column="user_name" />
+        <result property="nickName" column="nick_name" />
+        <result property="gender" column="gender" />
+        <result property="biography" column="biography" />
+        <result property="birthday" column="birthday" />
+        <result property="phoneNumber" column="phone_number" />
+        <result property="emailAddress" column="email_address" />
+    </resultMap>
+
     <insert id="insertUser">
         INSERT INTO t_user(user_uid, user_name, pass_word, nick_name)
         VALUES (#{userUid}, #{userName}, #{passWord}, #{nickName})
     </insert>
 
+    <!--修改密码-->
+    <update id="updatePassWord">
+        UPDATE t_user
+        SET pass_word = #{passWord}
+        WHERE user_uid = #{userUid} AND user_status = 0
+    </update>
+
+    <update id="deleteUser">
+        UPDATE t_user
+        SET user_status = 1, user_name = #{newUserName}, nick_name = #{newNickName}
+        WHERE user_uid = #{userUid}
+    </update>
+
+    <update id="updateUserInfo">
+        UPDATE t_user
+        <set>
+            update_time = CURRENT_TIMESTAMP,  <!--防止全空导致UPDATE出错.这样做有个缺点,即使什么都没更新也会修改update_time,之后看要不要改-->
+            <if test="nickName != null">nick_name = #{nickName},</if>
+            <if test="gender != null">gender = #{gender},</if>
+            <if test="biography != null">biography = #{biography},</if>
+            <if test="birthday != null">birthday = #{birthday},</if>
+            <if test="phoneNumber != null">phone_number = #{phoneNumber},</if>
+            <if test="emailAddress != null">email_address = #{emailAddress},</if>
+        </set>
+        <trim suffixOverrides=",">  <!-- set-if每个条件末尾要加逗号，最后一个条件的逗号怎么办呢？就用trim去掉 -->
+            WHERE user_uid = #{userUid} AND user_status = 0
+        </trim>
+    </update>
+
     <select id="selectPassWord">
         SELECT pass_word
         FROM t_user
-        WHERE user_uid = #{userUid}
+        WHERE user_uid = #{userUid} AND user_status = 0
     </select>
 
     <select id="selectUserUidFromUserName">
         SELECT user_uid
         FROM t_user
-        WHERE user_name = #{userName}
+        WHERE user_name = #{userName} AND user_status = 0
     </select>
 
     <select id="selectUserNameFromUserUid">
         SELECT user_name
         FROM t_user
-        WHERE user_uid = #{userUid}
+        WHERE user_uid = #{userUid} AND user_status = 0
+    </select>
+
+    <select id="selectUserInfo"  resultMap="UserInfoMap">
+        SELECT user_name, nick_name, gender, biography, birthday, phone_number, email_address
+        FROM t_user
+        WHERE user_uid = #{userUid} AND user_status = 0
     </select>
 
     <select id="isUserNameExists">
         SELECT COUNT(*) &gt; 0
         FROM t_user
-        WHERE user_name = #{userName} 
+        WHERE user_name = #{userName}
     </select>
 
 </mapper>

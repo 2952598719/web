@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/Home.vue';
 import UserCenter from '../views/UserCenter.vue';
-// import UserPage from '../views/UserPage.vue';
+import UserPage from '../views/UserPage.vue';
 import ArticlePage from '../views/ArticlePage.vue'
 import WriteArticle from '../views/WriteArticle.vue';
 // import ArticleListPage from '../views/ArticleListPage.vue';
@@ -25,11 +25,11 @@ const blogRoutes = [
 		name: 'UserCenter',
 		component: UserCenter,
 	},
-	// {
-	// 	path: '/user/:userName',
-	// 	name: 'UserPage',
-	// 	component: UserPage,
-	// },
+	{
+		path: '/user/:userName',
+		name: 'UserPage',
+		component: UserPage,
+	},
 	// 文章相关
 	{
 		path: '/article/:articleUid',

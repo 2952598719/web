@@ -40,7 +40,7 @@ public class ArticleService {
     public ArticleDetailVO searchArticle(Long articleUid) {
         boolean isArticleExist = articleMapper.isArticleExist(articleUid);
         if (!isArticleExist) {
-            throw new BusinessException(ResultCodeEnum.ARTICLE_NE);
+            throw new BusinessException(ResultCodeEnum.ARTICLE_NOT_EXIST, "文章不存在");
         }
 
         ArticleDetailVO article = articleMapper.selectArticle(articleUid);

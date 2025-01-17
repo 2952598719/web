@@ -1,9 +1,5 @@
 <template>
     <span>
-        <el-upload action="#" :http-request="uploadAvatarImage" :show-file-list="false">
-            <el-avatar :size=100 :src="avatarUrl" />
-            <el-button slot="trigger">修改头像</el-button>
-        </el-upload>
         <p>{{ userInfo.nickName }}</p>
         <div class="right-button-head">
             <el-button type="primary" @click="infoDialogVisible = true">修改信息</el-button>
@@ -16,9 +12,9 @@
         <el-descriptions-item label="用户名" align="center">{{ userInfo.userName }}</el-descriptions-item>
         <el-descriptions-item label="昵称" align="center">{{ userInfo.nickName }}</el-descriptions-item>
         <el-descriptions-item label="性别" align="center">
-            <span v-if="userInfo.gender === '0'">保密</span>
-            <span v-else-if="userInfo.gender === '1'">男</span>
-            <span v-else-if="userInfo.gender === '2'">女</span>
+            <span v-if="userInfo.gender === 0">保密</span>
+            <span v-else-if="userInfo.gender === 1">男</span>
+            <span v-else-if="userInfo.gender === 2">女</span>
         </el-descriptions-item>
         <el-descriptions-item label="生日" align="center">{{ userInfo.birthday }}</el-descriptions-item>
         <el-descriptions-item label="手机号" align="center">{{ userInfo.phoneNumber }}</el-descriptions-item>
@@ -77,12 +73,12 @@
 <script lang="ts" setup>
 // TODO: 逻辑正确之后加入未登录的判断逻辑
 import { ref, reactive, onMounted } from 'vue'
-import { unregisterApi, getInfoApi, modifyPasswordApi, modifyUserInfoApi, getAvatarApi, modifyAvatarApi } from '../apis/apiUser';
+import { unregisterApi, getUserInfoApi, modifyPasswordApi, modifyUserInfoApi } from '../apis/apiUser';
 import { ElMessage } from 'element-plus';
 import { useUserStore } from '../utils/stores';
 import { useRoute, useRouter } from 'vue-router';
 import { removeToken } from '../utils/funcs';
-import { uploadImageApi, deleteImageApi } from '../apis/apiImage';
+import type { PassWordForm, UserInfoForm, UserInfoFormDisplay } from '@/utils/infs';
 
 onMounted(() => {
     fetchUserInfo()
@@ -95,79 +91,52 @@ const userStoreObject = useUserStore()
 const infoDialogVisible = ref(false)
 const passWordDialogVisible = ref(false)
 
-const avatarUrl = ref()
-const avatarHash = ref()
 const userName = userStoreObject.userName
+
+// 以下两个，userInfo用来展示，infoForm用来修改
+const userInfo = ref<UserInfoFormDisplay>({
+    'userName': '',
+    'nickName': '',
+    'gender': 0,
+    'biography': '',
+    'birthday': '',
+    'phoneNumber': '',
+    'emailAddress': '',
+})
+const infoForm = ref<UserInfoForm>({
+    'nickName': '',
+    'gender': 0,
+    'biography': '',
+    'birthday': '',
+    'phoneNumber': '',
+    'emailAddress': '',
+})
+const passWordForm = ref<PassWordForm>({
+    'passWord': '',
+})
+
 
 async function fetchUserInfo() {
     try {
-        const response = await getInfoApi(userName as string)
-        const avatar = await getAvatarApi()
-        for (var key in response) {
-            userInfo.value[key] = response[key]
+        if(!userStoreObject.isLogin) {
+            router.push("/")
         }
-        for (var key in infoForm.value) {   // 填充infoForm，方便修改
-            infoForm.value[key] = userInfo.value[key]
-        }
-
-        avatarUrl.value = (avatar.data == null) ? "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png" : avatar.data.imageUrl
-        avatarHash.value = (avatar.data == null) ? null : avatar.data.imageHash
+        const response = await getUserInfoApi(userName as string)
+        Object.assign(userInfo.value, response.data);
+        Object.assign(infoForm.value, userInfo.value);
     } catch (error) {
         console.log(error)
         ElMessage.error("获取用户信息失败")
     }
 }
 
-
-interface UploadParams {
-    file: File;
-}
-
-async function uploadAvatarImage(params: UploadParams) {
+async function submitInfoModify() {
     try {
-        const avatar = await uploadImageApi(params.file)
-        if (avatarHash.value != null) {
-            await deleteImageApi(avatarHash.value)
-        }
-        const tempAvatarUrl = avatar.url
-        const tempAvatarHash = avatar.hash
-        await modifyAvatarApi(tempAvatarUrl, tempAvatarHash)
-        avatarUrl.value = tempAvatarUrl
-        avatarHash.value = tempAvatarHash
-    } catch (error) {
-        console.log(error)
-        ElMessage.error("上传头像失败")
-    }
-}
-
-// 以下两个，userInfo用来展示，infoForm用来修改
-const userInfo = ref<{ [key: string]: string }>({
-    'userName': '',
-    'nickName': '',
-    'gender': '',
-    'biography': '',
-    'birthday': '',
-    'phoneNumber': '',
-    'emailAddress': '',
-})
-const infoForm = ref<{ [key: string]: string }>({
-    'nickName': '',
-    'gender': '',
-    'biography': '',
-    'birthday': '',
-    'phoneNumber': '',
-    'emailAddress': '',
-})
-const passWordForm = ref<{ [key: string]: string }>({
-    'passWord': '',
-})
-
-const submitInfoModify = async () => {
-    try {
-        const actualInfoForm: { [key: string]: string } = {}
-        for (const key in infoForm.value) {  // 这里是个值得注意的地方。当传到后端的参数对象中，没有某个变量，那么就不会对它检验，导致空值进入数据库，因此需要在前端过滤掉
-            if (infoForm.value[key] !== '') {
-                actualInfoForm[key] = infoForm.value[key]
+        const actualInfoForm: Partial<Record<keyof UserInfoForm, string | number>> = {};
+        for (const key in infoForm.value) {     // 遍历 infoForm 中的所有属性
+            const value = infoForm.value[key as keyof UserInfoForm];
+            if (value !== '') {
+                actualInfoForm[key as keyof UserInfoForm] = value;
             }
         }
         const response = await modifyUserInfoApi(actualInfoForm)
@@ -185,19 +154,13 @@ const submitInfoModify = async () => {
     }
 }
 
-const submitPassWordModify = async () => {
+async function submitPassWordModify() {
     try {
         if (passWordForm.value.passWord === '') {
             ElMessage.info("密码未修改")
             return
         }
-        const actualpassWordForm: { [key: string]: string } = {}
-        for (const key in passWordForm.value) {  // 这里是个值得注意的地方。当传到后端的参数对象中，没有某个变量，那么就不会对它检验，因此需要在前端过滤掉
-            if (passWordForm.value[key] !== '') {
-                actualpassWordForm[key] = passWordForm.value[key]
-            }
-        }
-        const response = await modifyPasswordApi(actualpassWordForm)
+        const response = await modifyPasswordApi(passWordForm.value)
         if (response.code === 99999) {
             ElMessage.success("修改密码成功")
         } else {
@@ -250,12 +213,12 @@ const infoRules = ref({
         { pattern: /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/, message: "请输入正确的邮箱", trigger: 'blur' }
     ]
 })
-
+// 把正则从后端拿到前端时，要把中间双斜杠去掉
 const passWordRules = ref({
     passWord: [
         { required: true, message: '请输入密码', trigger: 'blur' },
         { min: 8, max: 20, message: "密码长度必须在8到20", trigger: 'blur' },
-        { pattern: /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)[A-Za-z\d]+$/, message: "密码包含至少1个大写，1个小写，1个数字", trigger: 'blur' }
+        { pattern: /^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d]+$/, message: "密码包含至少1个字母，1个数字", trigger: 'blur' }
     ],
 })
 </script>

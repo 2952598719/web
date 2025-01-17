@@ -1,7 +1,11 @@
 package top.orosirian.blog.mapper;
 
+import java.time.LocalDate;
+
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+
+import top.orosirian.blog.entity.vo.UserInfoVO;
 
 /**
  * <p>
@@ -16,11 +20,23 @@ public interface UserMapper {
 
     void insertUser(@Param("userUid")Long userUid, @Param("userName") String userName, @Param("passWord") String passWord, @Param("nickName") String nickName);
 
+    void updatePassWord(@Param("userUid") Long userUid, @Param("passWord") String passWord);
+
+    void deleteUser(@Param("userUid") Long userUid,  @Param("newUserName") String newUserName, @Param("newNickName") String newNickName);
+
+    void updateUserInfo(@Param("userUid") Long userUid, 
+                    @Param("nickName") String nickName, @Param("gender") Integer gender,
+                    @Param("biography") String biography, @Param("birthday") LocalDate birthday,
+                    @Param("phoneNumber") String phoneNumber, @Param("emailAddress") String emailAddress
+                    );
+
     String selectPassWord(@Param("userUid") Long userUid);
 
     Long selectUserUidFromUserName(@Param("userName") String userName);
 
     String selectUserNameFromUserUid(@Param("userUid") Long userUid);
+
+    UserInfoVO selectUserInfo(@Param("userUid") Long userUid); 
 
     boolean isUserNameExists(@Param("userName") String userName);
 

@@ -17,3 +17,21 @@ export interface ArticleForm {
     articleContent: string;
     createTime: string;
 }
+
+export interface UserInfoForm {
+    nickName: string;
+    gender: number;
+    biography: string;
+    birthday: string;
+    phoneNumber: string;
+    emailAddress: string;
+}
+
+export interface UserInfoFormDisplay extends UserInfoForm {
+    userName: string;
+}
+
+export interface PassWordForm {
+    passWord: string;
+}
+

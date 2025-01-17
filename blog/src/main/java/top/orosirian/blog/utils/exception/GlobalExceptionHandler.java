@@ -70,7 +70,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.OK)
     @ExceptionHandler(NotLoginException.class)
     public SaResult handleNotLoginException(NotLoginException e) {
-        String comprehensibleMessage = "登录，权限相关问题";
+        String comprehensibleMessage = "token失效";
         log.warn(formatException(e, comprehensibleMessage, e.getMessage(), false));
         return SaResult.ok().setCode(e.getCode()).setMsg(e.getMessage());
     }

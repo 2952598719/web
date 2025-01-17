@@ -14,7 +14,7 @@
         <template #extra> <!--插槽3：头像下拉框-->
             <el-button v-if="!userStoreObject.isLogin" @click="dialogVisible = true">登录/注册</el-button>
             <el-dropdown v-else @command="handleDropdown">
-                <span @click="gotoUserPage">
+                <span @click="gotoUserPage" class="el-dropdown-link">
                     <el-avatar :size=40 :src="userStoreObject.avatarUrl" />
                 </span>
                 <template #dropdown>
@@ -211,6 +211,10 @@ const registerRules = ref({    // 登录无需验证
 .el-divider {
     margin-top: 10px;
     margin-bottom: 10px;
+}
+
+.el-dropdown-link:focus-visible {
+    outline: unset;
 }
 
 </style>

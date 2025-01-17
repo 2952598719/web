@@ -66,8 +66,10 @@ async function renderMarkdown() {
     font-size: 30px;
 }
 
-.preview {
+#preview {
     overflow: hidden;
+    margin-left: 25%;
+    margin-right: 25%;
 }
 
 .author-container {

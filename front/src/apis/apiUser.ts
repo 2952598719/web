@@ -1,4 +1,4 @@
-import type { LoginForm, RegisterForm } from "@/utils/infs";
+import type { LoginForm, PassWordForm, RegisterForm, UserInfoForm } from "@/utils/infs";
 import { vanillaRequest, tokenRequest } from "./requests"
 
 export async function registerApi(form: RegisterForm) {
@@ -46,67 +46,35 @@ export async function checkLoginApi() {     // 如果token有效，则返回{ us
 }
 
 
-export async function getInfoApi(userName: string) {  // 返回用户信息
+export async function getUserInfoApi(userName: string) {  // 返回用户信息
 
     const response = await vanillaRequest({
         method: 'GET',
         url: '/user/info/' + userName,
     })
-    if (response.data.code === 10005) return "未找到用户"
-    else return response.data.data
+    return response.data
 
 }
 
-
-export async function modifyUserInfoApi(data: any) {
+// 为什么form是{[key: string]: any}而不是UserInfoForm，因为传到后端的数据可能只有部分字段
+export async function modifyUserInfoApi(form: {[key: string]: any}) {
 
     const response = await tokenRequest({
         method: 'PUT',
         url: '/user/info',
-        
-        data: data
+        data: form
     })
     return response.data
 
 }
 
-export async function modifyPasswordApi(data: any) {
+export async function modifyPasswordApi(form: PassWordForm) {
 
     const response = await tokenRequest({
         method: 'PUT',
         url: '/user/info/password',
-        
-        data: data,
+        data: form,
     })
     return response.data
 
 }
-
-
-export async function getAvatarApi() {
-
-    const response = await tokenRequest({
-        method: 'GET',
-        url: '/user/avatar',
-        
-    })
-    return response.data
-
-}
-
-
-export async function modifyAvatarApi(avatarUrl: string, avatarHash: string) {
-
-    const response = await tokenRequest({
-        method: 'PUT',
-        url: '/user/info/avatar',
-        
-        params: {
-            avatarUrl: avatarUrl,
-            avatarHash: avatarHash,
-        }
-    })
-    return response.data
-
-}
-

@@ -65,6 +65,7 @@ const title = ref('')
 const userStoreObject = useUserStore()
 
 // 函数
+// 实在没办法弄成居中
 async function insertImage(files) {
     try {
         const response = await uploadImageApi(files[0]);

@@ -15,6 +15,8 @@ async function processUserBasicInfo(): Promise<{ userName: string; avatarUrl: st
                 const avatarUrl = response.data.avatarUrl;
                 return { userName, avatarUrl };
             } else {
+                console.error('获取用户信息失败');
+                setToken('');
                 return null;
             }
         } catch(error) {
@@ -40,6 +42,10 @@ export const useUserStore = defineStore('auth', () => {
                 userName.value = userBasicInfo.userName;
                 avatarUrl.value = userBasicInfo.avatarUrl;
                 isLogin.value = true;
+            } else {
+                userName.value = null;
+                avatarUrl.value = "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png";
+                isLogin.value = false
             }
         } catch (error) {
             userName.value = null;
