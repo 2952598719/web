@@ -1,26 +1,35 @@
 <template>
     <span>
-        <p>{{ userInfo.nickName }}</p>
+        <div class="avatar-container">
+            <el-upload action="#" :http-request="uploadAvatarImage" :show-file-list="false">
+                <el-avatar :size=100 :src="avatarUrl" shape="square"/>
+                <!-- <el-button slot="trigger">修改头像</el-button> -->
+            </el-upload>
+        </div>
         <div class="right-button-head">
             <el-button type="primary" @click="infoDialogVisible = true">修改信息</el-button>
             <el-button type="primary" @click="passWordDialogVisible = true">修改密码</el-button>
             <el-button @click="userUnregister" type="danger">注销</el-button>
         </div>
     </span>
-    <el-descriptions v-if="userInfo" :column="3" border>
-        <template #extra></template>
-        <el-descriptions-item label="用户名" align="center">{{ userInfo.userName }}</el-descriptions-item>
-        <el-descriptions-item label="昵称" align="center">{{ userInfo.nickName }}</el-descriptions-item>
-        <el-descriptions-item label="性别" align="center">
-            <span v-if="userInfo.gender === 0">保密</span>
-            <span v-else-if="userInfo.gender === 1">男</span>
-            <span v-else-if="userInfo.gender === 2">女</span>
-        </el-descriptions-item>
-        <el-descriptions-item label="生日" align="center">{{ userInfo.birthday }}</el-descriptions-item>
-        <el-descriptions-item label="手机号" align="center">{{ userInfo.phoneNumber }}</el-descriptions-item>
-        <el-descriptions-item label="邮箱" align="center">{{ userInfo.emailAddress }}</el-descriptions-item>
-        <el-descriptions-item label="个人介绍" align="center">{{ userInfo.biography }}</el-descriptions-item>
-    </el-descriptions>
+
+    <div class="description-container">
+        <el-descriptions v-if="userInfo" :column="1" border>
+            <template #extra></template>
+            <el-descriptions-item label="用户名" align="center">{{ userInfo.userName }}</el-descriptions-item>
+            <el-descriptions-item label="昵称" align="center">{{ userInfo.nickName }}</el-descriptions-item>
+            <el-descriptions-item label="性别" align="center">
+                <span v-if="userInfo.gender === 0">保密</span>
+                <span v-else-if="userInfo.gender === 1">男</span>
+                <span v-else-if="userInfo.gender === 2">女</span>
+            </el-descriptions-item>
+            <el-descriptions-item label="生日" align="center">{{ userInfo.birthday }}</el-descriptions-item>
+            <el-descriptions-item label="手机号" align="center">{{ userInfo.phoneNumber }}</el-descriptions-item>
+            <el-descriptions-item label="邮箱" align="center">{{ userInfo.emailAddress }}</el-descriptions-item>
+            <el-descriptions-item label="个人介绍" align="center">{{ userInfo.biography }}</el-descriptions-item>
+        </el-descriptions>
+    </div>
+    
 
     <el-dialog v-model="infoDialogVisible" @close="infoDialogVisible = false">
         <el-form :model="infoForm" :rules="infoRules">
@@ -36,7 +45,11 @@
             </el-form-item>
             <el-form-item label="生日">
                 <el-col>
-                    <el-date-picker v-model="infoForm.birthday" type="date" />
+                    <el-date-picker v-model="infoForm.birthday" 
+                                    type="date" 
+                                    format="YYYY/MM/DD" 
+                                    value-format="YYYY-MM-DD"
+                                    :disabled-date="disabledDate"/>
                 </el-col>
             </el-form-item>
             <el-form-item label="个性签名" prop="biography">
@@ -73,12 +86,13 @@
 <script lang="ts" setup>
 // TODO: 逻辑正确之后加入未登录的判断逻辑
 import { ref, reactive, onMounted } from 'vue'
-import { unregisterApi, getUserInfoApi, modifyPasswordApi, modifyUserInfoApi } from '../apis/apiUser';
+import { unregisterApi, getUserInfoApi, modifyPasswordApi, modifyUserInfoApi, modifyAvatarApi } from '../apis/apiUser';
 import { ElMessage } from 'element-plus';
 import { useUserStore } from '../utils/stores';
 import { useRoute, useRouter } from 'vue-router';
 import { removeToken } from '../utils/funcs';
 import type { PassWordForm, UserInfoForm, UserInfoFormDisplay } from '@/utils/infs';
+import { deleteImageApi, uploadImageApi } from '@/apis/apiImage';
 
 onMounted(() => {
     fetchUserInfo()
@@ -91,7 +105,8 @@ const userStoreObject = useUserStore()
 const infoDialogVisible = ref(false)
 const passWordDialogVisible = ref(false)
 
-const userName = userStoreObject.userName
+const userName = ref(userStoreObject.userName)
+const avatarUrl = ref(userStoreObject.avatarUrl)
 
 // 以下两个，userInfo用来展示，infoForm用来修改
 const userInfo = ref<UserInfoFormDisplay>({
@@ -102,6 +117,7 @@ const userInfo = ref<UserInfoFormDisplay>({
     'birthday': '',
     'phoneNumber': '',
     'emailAddress': '',
+    'avatarHash': '',
 })
 const infoForm = ref<UserInfoForm>({
     'nickName': '',
@@ -121,13 +137,18 @@ async function fetchUserInfo() {
         if(!userStoreObject.isLogin) {
             router.push("/")
         }
-        const response = await getUserInfoApi(userName as string)
+        const response = await getUserInfoApi(userName.value as string)
         Object.assign(userInfo.value, response.data);
         Object.assign(infoForm.value, userInfo.value);
     } catch (error) {
         console.log(error)
         ElMessage.error("获取用户信息失败")
     }
+}
+
+async function updateAvatar() {
+    await userStoreObject.update()
+    avatarUrl.value = userStoreObject.avatarUrl
 }
 
 async function submitInfoModify() {
@@ -180,7 +201,7 @@ const passWordDialogClose = () => {
     passWordForm.value = { 'passWord': '' }
 }
 
-const userUnregister = async () => {
+async function userUnregister() {
     try {
         const response = await unregisterApi()
         if (response.code === 99999) {
@@ -195,6 +216,33 @@ const userUnregister = async () => {
     } finally {
 
     }
+}
+
+async function uploadAvatarImage(params: any) {
+    try {
+        const response = await uploadImageApi(params.file)
+        if(response.success === false) {
+            ElMessage.error("上传头像失败")
+            return
+        } else {
+            if (userInfo.value.avatarHash != '') {
+                await deleteImageApi(userInfo.value.avatarHash)
+            }
+            const tempAvatarUrl = response.data.url
+            const tempAvatarHash = response.data.hash
+            await modifyAvatarApi(tempAvatarUrl, tempAvatarHash)
+            ElMessage.success("上传头像成功")
+            updateAvatar()
+        }
+    } catch (error) {
+        console.log(error)
+        ElMessage.error("上传头像失败")
+    }
+}
+
+
+function disabledDate(date: Date) {
+    return date.getTime() > Date.now();
 }
 
 
@@ -290,4 +338,16 @@ const passWordRules = ref({
 .collection-function {
     padding-bottom: 20px;
 }
+
+.avatar-container {
+    display: flex;
+    justify-content: center;
+    padding-top: 20px;
+}
+
+.description-container {
+    margin-left: 25%;
+    margin-right: 25%;
+}
+
 </style>

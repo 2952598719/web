@@ -13,7 +13,7 @@ export async function uploadImageApi(file: File) {
     };
 
     const response = await axios.post('/img/upload', formData, config);
-    return response.data.data;
+    return response.data;
 }
 
 export async function deleteImageApi(hash: string) {

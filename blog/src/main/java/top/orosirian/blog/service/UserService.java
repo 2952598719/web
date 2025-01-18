@@ -1,7 +1,5 @@
 package top.orosirian.blog.service;
 
-import java.util.UUID;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -9,8 +7,9 @@ import cn.dev33.satoken.secure.BCrypt;
 import cn.hutool.core.lang.Snowflake;
 import lombok.extern.slf4j.Slf4j;
 import top.orosirian.blog.entity.param.ModifyInfoParam;
+import top.orosirian.blog.entity.vo.UserBasicVO;
 import top.orosirian.blog.entity.vo.UserInfoVO;
-import top.orosirian.blog.entity.vo.UserLoginInfoVO;
+import top.orosirian.blog.mapper.ImageMapper;
 import top.orosirian.blog.mapper.UserMapper;
 import top.orosirian.blog.utils.ResultCodeEnum;
 import top.orosirian.blog.utils.exception.BusinessException;
@@ -26,6 +25,9 @@ public class UserService {
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private ImageMapper imageMapper;
 
     /**
      * 注册登录
@@ -64,11 +66,13 @@ public class UserService {
         log.info("用户{}登出成功", userUid);
     }
 
-    public UserLoginInfoVO checkLogin(Long userUid) {
-        String userName = userMapper.selectUserNameFromUserUid(userUid);
-        String avatarUrl = "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png";
+    public UserBasicVO checkLogin(Long userUid) {
+        UserBasicVO userBasicVO = userMapper.selectUserBasic(userUid);
+        if(userBasicVO.getAvatarUrl() == null) {
+            userBasicVO.setAvatarUrl("https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png");
+        }
         log.info("获取用户{}基础信息成功", userUid);
-        return new UserLoginInfoVO(userName, avatarUrl);
+        return userBasicVO;
     }
 
     /**
@@ -99,7 +103,18 @@ public class UserService {
         log.info("用户{}个人信息更新成功", userUid);
     }
 
+    public void modifyAvatar(Long userUid, String avatarUrl, String avatarHash) {
+        Long originAvatarUid = userMapper.selectAvatarUid(userUid);
+        if(originAvatarUid != null) {
+            imageMapper.deleteImage(originAvatarUid);
+        }
 
+        Long avatarUid = snowflake.nextId();
+        imageMapper.insertImage(avatarUid, avatarUrl, avatarHash);
+        userMapper.updateAvatar(userUid, avatarUid);
+
+        log.info("用户{}头像更新成功", userUid);
+    }
 
     
 }

@@ -2,6 +2,11 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="top.orosirian.blog.mapper.UserMapper">
 
+    <resultMap id="UserBasicMap" type="top.orosirian.blog.entity.vo.UserBasicVO">
+        <result property="userName" column="user_name" />
+        <result property="avatarUrl" column="image_url" />
+    </resultMap>
+
     <resultMap id="UserInfoMap" type="top.orosirian.blog.entity.vo.UserInfoVO">
         <result property="userName" column="user_name" />
         <result property="nickName" column="nick_name" />
@@ -10,6 +15,7 @@
         <result property="birthday" column="birthday" />
         <result property="phoneNumber" column="phone_number" />
         <result property="emailAddress" column="email_address" />
+        <result property="avatarHash" column="image_hash" />
     </resultMap>
 
     <insert id="insertUser">
@@ -46,6 +52,12 @@
         </trim>
     </update>
 
+    <update id="updateAvatar">
+        UPDATE t_user
+        SET avatar_uid = #{avatarUid}
+        WHERE user_uid = #{userUid} AND user_status = 0
+    </update>
+
     <select id="selectPassWord">
         SELECT pass_word
         FROM t_user
@@ -64,9 +76,21 @@
         WHERE user_uid = #{userUid} AND user_status = 0
     </select>
 
-    <select id="selectUserInfo"  resultMap="UserInfoMap">
-        SELECT user_name, nick_name, gender, biography, birthday, phone_number, email_address
+    <select id="selectAvatarUid">
+        SELECT avatar_uid
         FROM t_user
+        WHERE user_uid = #{userUid} AND user_status = 0
+    </select>
+
+    <select id="selectUserBasic"  resultMap="UserBasicMap">
+        SELECT u.user_name, i.image_url
+        FROM t_user u LEFT JOIN t_image i ON u.avatar_uid = i.image_uid
+        WHERE user_uid = #{userUid} AND user_status = 0
+    </select>
+
+    <select id="selectUserInfo"  resultMap="UserInfoMap">
+        SELECT u.user_name, u.nick_name, u.gender, u.biography, u.birthday, u.phone_number, u.email_address, i.image_hash
+        FROM t_user as u LEFT JOIN t_image as i ON u.avatar_uid = i.image_uid
         WHERE user_uid = #{userUid} AND user_status = 0
     </select>
 

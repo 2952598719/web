@@ -29,6 +29,7 @@ export interface UserInfoForm {
 
 export interface UserInfoFormDisplay extends UserInfoForm {
     userName: string;
+    avatarHash: string;
 }
 
 export interface PassWordForm {

@@ -78,3 +78,20 @@ export async function modifyPasswordApi(form: PassWordForm) {
     return response.data
 
 }
+
+export async function modifyAvatarApi(avatarUrl: string, avatarHash: string) {
+
+    const response = await tokenRequest({
+        method: 'PUT',
+        url: '/user/info/avatar',
+        
+        params: {
+            avatarUrl: avatarUrl,
+            avatarHash: avatarHash,
+        }
+    })
+    return response.data
+
+}
+
+

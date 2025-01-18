@@ -1,5 +1,7 @@
 package top.orosirian.blog.entity.vo;
 
+import java.time.LocalDate;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -7,10 +9,10 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserLoginInfoVO {
+public class UserBasicVO {
 
-    String userName;
+    private String userName;
 
-    String avatarUrl;
+    private String avatarUrl;
     
 }

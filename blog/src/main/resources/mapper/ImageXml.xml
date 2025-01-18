@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.orosirian.blog.mapper.ImageMapper">
+
+    <!-- <resultMap id="ImageMap" type="top.orosirian.blog.entity.vo.ImageVO">
+        <result property="imageUrl" column="image_url" />
+        <result property="imageHash" column="image_hash" />
+    </resultMap> -->
+
+    <insert id="insertImage">
+        INSERT INTO t_image(image_uid, image_url, image_hash)
+        VALUES (#{imageUid}, #{imageUrl}, #{imageHash})
+    </insert>
+
+    <delete id="deleteImage">
+        DELETE
+        FROM t_image
+        WHERE image_uid = #{imageUid}
+    </delete>
+    
+    <update id="updateImage">
+        UPDATE t_image
+        SET image_url = #{imageUrl}, image_hash = #{imageHash}
+        WHERE image_uid = #{imageUid}
+    </update>
+
+    <!-- <select id="selectImage" resultMap="ImageMap">
+        SELECT image_url, image_hash
+        FROM t_image
+        WHERE image_uid = #{imageUid}
+    </select> -->
+
+</mapper>

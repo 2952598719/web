@@ -24,5 +24,9 @@ public class UserInfoVO {
     private String phoneNumber;
 
     private String emailAddress;
+
+    private String avatarUrl;
+
+    private String avatarHash;
     
 }

@@ -52,5 +52,19 @@ CREATE TABLE t_article(
 
 
 
+-- ---------------
+-- 其他功能
+-- ---------------
+
+DROP TABLE IF EXISTS t_image;
+CREATE TABLE t_image(
+    image_uid   BIGINT NOT NULL COMMENT '图片uid',
+    image_url   VARCHAR(255) NOT NULL COMMENT '图片地址',
+    image_hash  VARCHAR(255) NOT NULL COMMENT '图片hash，删除图床的图片时需要提供',
+    create_time DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY(image_uid)
+) COMMENT '图片表';
+
 
 

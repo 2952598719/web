@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
@@ -19,8 +20,8 @@ import top.orosirian.blog.entity.param.LoginParam;
 import top.orosirian.blog.entity.param.ModifyInfoParam;
 import top.orosirian.blog.entity.param.ModifyPassWordParam;
 import top.orosirian.blog.entity.param.RegisterParam;
+import top.orosirian.blog.entity.vo.UserBasicVO;
 import top.orosirian.blog.entity.vo.UserInfoVO;
-import top.orosirian.blog.entity.vo.UserLoginInfoVO;
 import top.orosirian.blog.service.UserService;
 import top.orosirian.blog.utils.ResultCodeEnum;
 
@@ -69,7 +70,7 @@ public class UserController {
     @GetMapping("/user/checkLogin")
     @SaCheckLogin
     public SaResult checkLogin() {
-        UserLoginInfoVO info = userService.checkLogin(StpUtil.getLoginIdAsLong());
+        UserBasicVO info = userService.checkLogin(StpUtil.getLoginIdAsLong());
         return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "处于登陆状态", info);
     }
 
@@ -98,6 +99,11 @@ public class UserController {
         return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "密码修改成功", null);
     }
 
-    
+    @PutMapping("/user/info/avatar")
+    @SaCheckLogin
+    public SaResult putAvatar(@RequestParam String avatarUrl, @RequestParam String avatarHash) {
+        userService.modifyAvatar(StpUtil.getLoginIdAsLong(), avatarUrl, avatarHash);
+        return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "头像修改成功", null);
+    }
 
 }

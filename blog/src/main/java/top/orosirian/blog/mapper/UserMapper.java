@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import top.orosirian.blog.entity.vo.UserBasicVO;
 import top.orosirian.blog.entity.vo.UserInfoVO;
 
 /**
@@ -30,11 +31,17 @@ public interface UserMapper {
                     @Param("phoneNumber") String phoneNumber, @Param("emailAddress") String emailAddress
                     );
 
+    void updateAvatar(@Param("userUid") Long userUid, @Param("avatarUid") Long avatarUid);
+
     String selectPassWord(@Param("userUid") Long userUid);
 
     Long selectUserUidFromUserName(@Param("userName") String userName);
 
     String selectUserNameFromUserUid(@Param("userUid") Long userUid);
+
+    Long selectAvatarUid(@Param("userUid") Long userUid);
+
+    UserBasicVO selectUserBasic(@Param("userUid") Long userUid);
 
     UserInfoVO selectUserInfo(@Param("userUid") Long userUid); 
 
