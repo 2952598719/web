@@ -14,11 +14,18 @@ public interface ArticleMapper {
 
     void updateArticle(Long articleUid, String title,  String articleContent, Integer articleType);
 
+    void deleteArticle(Long articleUid);
+
     ArticleDetailVO selectArticle(Long articleUid);
 
     List<ArticleBriefVO> selectArticleList();
 
+    List<ArticleBriefVO> selectUserArticleList(Long userUid);
+
+    Long selectAuthorUid(Long articleUid);
+
     boolean isArticleExist(Long articleUid);
+    
 
     
 }

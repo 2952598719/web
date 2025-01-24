@@ -28,26 +28,45 @@
     <insert id="updateArticle">
         UPDATE t_article
         SET title=#{title}, article_content=#{articleContent}, article_type=#{articleType}, update_time=NOW()
-        WHERE article_uid=#{articleUid}
+        WHERE article_uid = #{articleUid} AND article_type = 1
     </insert>
+
+    <update id="deleteArticle">
+        UPDATE t_article
+        SET article_type = 2
+        WHERE article_uid = #{articleUid}
+    </update>
 
     <select id="selectArticle" resultMap="ArticleDetailMap">
         SELECT a.article_uid, u.user_name, u.nick_name, a.title, a.article_content, a.create_time, a.update_time
         FROM t_article AS a LEFT JOIN t_user AS u ON a.user_uid = u.user_uid
-        WHERE a.article_uid = #{articleUid}
+        WHERE a.article_uid = #{articleUid} AND a.article_type = 1
     </select>
 
     <select id="selectArticleList" resultMap="ArticleBriefMap">
         SELECT a.article_uid, u.user_name, u.nick_name, a.title, a.create_time
         FROM t_article AS a LEFT JOIN t_user AS u ON a.user_uid = u.user_uid
-        WHERE article_type = 1
+        WHERE a.article_type = 1
         ORDER BY a.create_time DESC
+    </select>
+
+    <select id="selectUserArticleList" resultMap="ArticleBriefMap">
+        SELECT a.article_uid, u.user_name, u.nick_name, a.title, a.create_time
+        FROM t_article AS a LEFT JOIN t_user AS u ON a.user_uid = u.user_uid
+        WHERE a.article_type = 1 AND a.user_uid = #{userUid}
+        ORDER BY a.create_time DESC
+    </select>
+
+    <select id="selectAuthorUid">
+        SELECT user_uid
+        FROM t_article
+        WHERE article_uid = #{articleUid} AND article_type = 1
     </select>
 
     <select id="isArticleExist">
         SELECT COUNT(*) &gt; 0
         FROM t_article
-        WHERE article_uid = #{articleUid}
+        WHERE article_uid = #{articleUid} AND article_type = 1
     </select>
 
 </mapper>

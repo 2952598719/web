@@ -30,7 +30,8 @@ public class GlobalExceptionHandler {
         StringBuilder sb = new StringBuilder();
         sb.append("(异常)\n")
             .append("<类型>").append(e.getClass()).append("\n")
-            .append("<说明>").append(comprehensibleMessage).append("\n");
+            .append("<说明>").append(comprehensibleMessage).append("\n")
+            .append("<详述>").append(exceptionMessage).append("\n");
             // .append("<信息>").append(exceptionMessage != null ? exceptionMessage : e.getMessage()).append("\n");
         if(stackRequired) {
             sb.append("<堆栈>\n");

@@ -4,8 +4,12 @@
             <h2>
                 <el-link class="article-title" :href="`/article/${article.articleUid}`">{{ article.title }}</el-link>
             </h2>
+            <div class="func-area" v-if="type=='manage'">
+                <el-button @click="gotoModifyArticle(article.articleUid)" type="primary">修改</el-button>
+                <el-button @click="deleteArticle(article.articleUid)" type="danger">删除</el-button>
+            </div>
             <div class="article-meta-info">
-                <p class="author">
+                <p class="author" v-if="type!='userpage'">
                     <el-button @click="gotoUserPage(article.userName)" link>作者: {{ article.nickName }}</el-button>
                 </p>
                 <p class="date">发表日期：{{ article.createTime }}</p>
@@ -18,29 +22,35 @@
 
 
 <script lang="ts" setup>
-import { ElMessage } from 'element-plus';
 import { ref, onMounted, watch } from 'vue';
+import { ElMessage } from 'element-plus';
 import { useRoute, useRouter } from 'vue-router';
 
-import { getArticleListApi } from '@/apis/apiArticle';
 import type { ArticleForm } from '@/utils/infs';
+import { useUserStore } from '@/utils/stores';
+import { getHomeArticleListApi, getManageArticleListApi, getUserPageArticleListApi, deleteArticleApi } from '@/apis/apiArticle';
 
 onMounted(() => {
     getArticleList()
 })
 
-
-
-// 接收参数
-const { page } = defineProps({page: Number})
-const currentPage = ref(page || 1);
-
 // 路由
 const route = useRoute()
 const router = useRouter()
+const userStore = useUserStore()
 function gotoUserPage(userName: string) {
     router.push("/user/" + userName)
 }
+function gotoModifyArticle(articleUid: string) {
+    router.push("/write/" + articleUid)
+}
+
+// 接收参数
+const page = route.query.page ? Number(route.query.page) : 1;
+const currentPage = ref(page);
+const { type = '' } = defineProps({type: String})
+
+
 
 watch(() => route.params.page, (newPage) => {
     currentPage.value = Number(newPage) || 1;
@@ -49,14 +59,23 @@ watch(() => route.params.page, (newPage) => {
 
 // 文章获取
 const articles = ref<ArticleForm[]>([])
-const pageSize = ref(2)
+const pageSize = ref(10)
 const articleCount = ref(0)
 
 async function getArticleList() {
     try {
         const response = ref()
-        const fetchParam = ref<string>('')
-        response.value = await getArticleListApi(currentPage.value, pageSize.value, "home", fetchParam.value);
+        if(type == 'home') {
+            response.value = await getHomeArticleListApi(currentPage.value, pageSize.value);
+        } else if(type == 'userPage') {
+            const userName = route.params.userName as string
+            response.value = await getUserPageArticleListApi(currentPage.value, pageSize.value, userName);
+        } else if(type == "manage") {
+            response.value = await getManageArticleListApi(currentPage.value, pageSize.value);
+        } else {
+            router.push("/PageNotFound")
+        }
+        
         articles.value = response.value.data.list
         articleCount.value = response.value.data.total
     } catch (error) {
@@ -64,11 +83,26 @@ async function getArticleList() {
         ElMessage.error("获取文章失败")
     }
 }
-function handlePageChange(newPage: number) {
+async function handlePageChange(newPage: number) {
     currentPage.value = newPage
-    router.push("/page/" + newPage)
+    router.push({ query: { page: newPage } })
+    await getArticleList()
 }
 
+async function deleteArticle(articleUid: string) {
+    try {
+        const response = await deleteArticleApi(articleUid)
+        getArticleList()
+        if (response.code === 99999) {
+            ElMessage.success("删除成功")
+        }
+    } catch (error) {
+        console.log(error)
+        ElMessage.error('删除失败')
+    } finally {
+
+    }
+}
 
 </script>
 
@@ -120,5 +154,15 @@ function handlePageChange(newPage: number) {
     margin-top: 20px;
 }
 
+.title {
+    text-align: center;
+    font-family: "微软雅黑";
+    font-size: 30px;
+    padding-bottom: 50px;
+}
+
+.right-button {
+    float: right;
+}
 
 </style>

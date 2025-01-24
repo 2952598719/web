@@ -94,4 +94,77 @@ export async function modifyAvatarApi(avatarUrl: string, avatarHash: string) {
 
 }
 
+// 关注部分
+export async function followApi(masterName: string) {
+
+    const response = await tokenRequest({
+        method: 'POST',
+        url: '/user/follow/' + masterName,
+        
+    })
+    return response.data
+
+}
+
+export async function unfollowApi(masterName: string) {
+
+    const response = await tokenRequest({
+        method: 'DELETE',
+        url: '/user/follow/' + masterName,
+        
+    })
+    return response.data
+
+}
+
+export async function checkFollowApi(masterName: string) {
+
+    const response = await tokenRequest({
+        method: 'GET',
+        url: '/user/follow/' + masterName,
+        
+    })
+    return response.data.data
+
+}
+
+export async function getMasterNumApi(userName: string) {
+
+    const response = await vanillaRequest({
+        method: 'GET',
+        url: '/user/info/' + userName + '/masterNum',
+    })
+    return response.data.data
+
+}
+
+// export async function getMasterListApi(userName: string) {
+
+//     const response = await vanillaRequest({
+//         method: 'GET',
+//         url: '/user/info/' + userName + '/masterNum',
+//     })
+//     return response.data.data
+
+// }
+
+export async function getFanNumApi(userName: string) {
+
+    const response = await vanillaRequest({
+        method: 'GET',
+        url: '/user/info/' + userName + '/fanNum',
+    })
+    return response.data.data
+
+}
+
+// export async function getFanListApi(userName: string) {
+
+//     const response = await vanillaRequest({
+//         method: 'GET',
+//         url: '/user/info/' + userName + '/fanNum',
+//     })
+//     return response.data.data
+
+// }
 

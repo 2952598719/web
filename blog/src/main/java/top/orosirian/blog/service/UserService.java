@@ -3,12 +3,14 @@ package top.orosirian.blog.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+
 import cn.dev33.satoken.secure.BCrypt;
 import cn.hutool.core.lang.Snowflake;
 import lombok.extern.slf4j.Slf4j;
 import top.orosirian.blog.entity.param.ModifyInfoParam;
 import top.orosirian.blog.entity.vo.UserBasicVO;
 import top.orosirian.blog.entity.vo.UserInfoVO;
+import top.orosirian.blog.mapper.FollowMapper;
 import top.orosirian.blog.mapper.ImageMapper;
 import top.orosirian.blog.mapper.UserMapper;
 import top.orosirian.blog.utils.ResultCodeEnum;
@@ -28,6 +30,9 @@ public class UserService {
 
     @Autowired
     private ImageMapper imageMapper;
+
+    @Autowired
+    private FollowMapper followMapper;
 
     /**
      * 注册登录
@@ -114,6 +119,57 @@ public class UserService {
         userMapper.updateAvatar(userUid, avatarUid);
 
         log.info("用户{}头像更新成功", userUid);
+    }
+
+
+    /**
+     * 关注取关
+     */
+
+     public void follow(String masterUserName, Long fanUid) {
+        Long masterUid = userMapper.selectUserUidFromUserName(masterUserName);
+        if(masterUid == null) throw new BusinessException(ResultCodeEnum.USER_NOT_EXIST);
+        if(masterUid == fanUid) throw new BusinessException(ResultCodeEnum.USER_FOLLOW_CONFLICT);
+
+        followMapper.insertFollow(masterUid, fanUid);
+        log.info("{}关注{}成功", fanUid, masterUid);
+    }
+
+    public void removeFollow(String masterUserName, Long fanUid) {
+        Long masterUid = userMapper.selectUserUidFromUserName(masterUserName);
+        if(masterUid == null) throw new BusinessException(ResultCodeEnum.USER_NOT_EXIST);
+
+        followMapper.deleteFollow(masterUid, fanUid);
+        log.info("{}取关{}成功", fanUid, masterUid);
+    }
+
+    public boolean checkFollow(String masterUserName, Long fanUid) {
+        Long masterUid = userMapper.selectUserUidFromUserName(masterUserName);
+        if(masterUid == null) throw new BusinessException(ResultCodeEnum.USER_NOT_EXIST);
+        boolean isFollowed = followMapper.isFollowed(masterUid, fanUid);
+        log.info("用户关注情况获取成功");
+        return isFollowed;
+    }
+
+    public Integer searchMasterNum(String fanUserName) {
+        Long fanUid = userMapper.selectUserUidFromUserName(fanUserName);
+        Integer masterNum = followMapper.selectMasterNum(fanUid);
+        log.info("用户关注人数获取成功");
+        return masterNum;
+    }
+
+    // public PageInfo<ArticleBriefVO> searchMasterList(String fanUserName) {
+    //     Long fanUid = userMapper.selectUserUidFromUserName(fanUserName);
+    //     Integer followeeNum = followMapper.selectMasterNum(fanUid);
+    //     log.info("用户关注人数获取成功");
+    //     return followeeNum;
+    // }
+
+    public Integer searchFanNum(String masterUserName) {
+        Long masterUid = userMapper.selectUserUidFromUserName(masterUserName);
+        Integer fanNum = followMapper.selectFanNum(masterUid);
+        log.info("用户粉丝人数获取成功");
+        return fanNum;
     }
 
     

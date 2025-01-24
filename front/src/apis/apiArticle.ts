@@ -23,6 +23,14 @@ export async function putArticleApi(articleUid: string, data: ArticleForm) {
 
 }
 
+export async function deleteArticleApi(articleUid: string) {
+    const response = await tokenRequest({
+        method: 'DELETE',
+        url: '/article/' + articleUid
+    })
+    return response.data
+}
+
 export async function getArticleApi(articleUid: string) {
 
     const response = await vanillaRequest({
@@ -33,14 +41,39 @@ export async function getArticleApi(articleUid: string) {
 
 }
 
-export async function getArticleListApi(currentPage: number, pageSize: number, searchType: string, searchParam: string) {
+export async function getHomeArticleListApi(currentPage: number, pageSize: number) {
     const response = await vanillaRequest({
         method: 'GET',
-        url: '/articles/' + searchType,
+        url: '/articles/home',
         params: {
             currentPage: currentPage,
             pageSize: pageSize,
-            // searchParam: searchParam
+            searchParam: ""
+        },
+    })
+    return response.data
+}
+
+export async function getUserPageArticleListApi(currentPage: number, pageSize: number, userName: string) {
+    const response = await vanillaRequest({
+        method: 'GET',
+        url: '/articles/userPage',
+        params: {
+            currentPage: currentPage,
+            pageSize: pageSize,
+            userName: userName,
+        },
+    })
+    return response.data
+}
+
+export async function getManageArticleListApi(currentPage: number, pageSize: number) {
+    const response = await tokenRequest({
+        method: 'GET',
+        url: '/articles/manage',
+        params: {
+            currentPage: currentPage,
+            pageSize: pageSize,
         },
     })
     return response.data

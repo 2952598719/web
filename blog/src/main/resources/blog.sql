@@ -32,6 +32,16 @@ CREATE TABLE t_user(
 INSERT INTO t_user(user_uid, user_name, pass_word, nick_name) 
     VALUES(1871217981827657728, 'orosirian', '$2a$10$JHEBKfQF3NNmMU5LSMtOb.by0Y7AU7kuAU6aA1gxJmpSXMoeMiQdC', "用户");  -- 密码aa111111
 
+DROP TABLE IF EXISTS t_follow;
+CREATE TABLE t_follow(
+    master_uid    BIGINT NOT NULL COMMENT '被关注者uid',
+    fan_uid    BIGINT NOT NULL COMMENT '粉丝uid',
+    create_time     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY(master_uid, fan_uid),
+    INDEX master_uid_index(master_uid), -- 用于统计某人粉丝数
+    INDEX fan_uid_index(fan_uid)  -- 用于统计某人关注数
+) COMMENT '用户关注表';
 
 -- ---------------
 -- 文章相关

@@ -1,112 +1,113 @@
-<!-- <template>
-    <span>
-        <el-avatar src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png" />
-        <p>{{ userInfo.nickName }}</p>
-        <p>关注数：{{ followCondition.masterNum }}</p>
-        <p>粉丝数：{{ followCondition.fanNum }}</p>
-        <p>个性签名：{{ userInfo.motto }}</p>
-        <el-button v-if="showFollowButton === 1" @click="followUser" type="primary">关注</el-button>
-        <el-button v-if="showFollowButton === 2" @click="unfollowUser" type="danger">取关</el-button>
-    </span>
+<template>
+	<div class="app-container">
+		<!-- 左边部分 -->
+		<div class="sidebar">
 
-    <el-descriptions v-if="userInfo" :column="1" border>
-        <el-descriptions-item label="用户名" align="center">{{ userInfo.userName }}</el-descriptions-item>
-        <el-descriptions-item label="昵称" align="center">{{ userInfo.nickName }}</el-descriptions-item>
-        <el-descriptions-item label="性别" align="center">{{ userInfo.sex }}</el-descriptions-item>
-        <el-descriptions-item label="生日" align="center">{{ userInfo.birthday }}</el-descriptions-item>
-        <el-descriptions-item label="手机号" align="center">{{ userInfo.phoneNumber }}</el-descriptions-item>
-        <el-descriptions-item label="邮箱" align="center">{{ userInfo.emailAddress }}</el-descriptions-item>
-        <el-descriptions-item label="学校" align="center">{{ userInfo.school }}</el-descriptions-item>
-    </el-descriptions>
+			<div class="user-info-top">
+				<el-avatar :src="userStoreObject.avatarUrl" />
+				<div class="info-text">
+					<p>{{ userInfo.nickName }}</p>
+					<p>关注数：{{ followCondition.masterNum }}</p>
+					<p>粉丝数：{{ followCondition.fanNum }}</p>
+					<p>个性签名：{{ userInfo.biography }}</p>
+				</div>
+				<div class="buttons">
+					<el-button v-if="showFollowButton === 1" @click="followUser" type="primary">关注</el-button>
+					<el-button v-if="showFollowButton === 2" @click="unfollowUser" type="danger">取关</el-button>
+				</div>
+			</div>
 
-    <el-tabs v-model="activeName" class="demo-tabs">
-        <el-tab-pane label="文章" name="article">
-            <ArticleList :listType="4"/>
-        </el-tab-pane>
-        <el-tab-pane label="合集" name="collection">
-            <CollectionList />
-        </el-tab-pane>
-    </el-tabs>
+			<el-descriptions v-if="userInfo" :column="1" border class="user-details">
+				<el-descriptions-item label="用户名" align="center">{{ userInfo.userName }}</el-descriptions-item>
+				<el-descriptions-item label="昵称" align="center">{{ userInfo.nickName }}</el-descriptions-item>
+				<el-descriptions-item label="性别" align="center">
+					<span v-if="userInfo.gender === 0">保密</span>
+					<span v-else-if="userInfo.gender === 1">男</span>
+					<span v-else-if="userInfo.gender === 2">女</span>
+				</el-descriptions-item>
+				<el-descriptions-item label="生日" align="center">{{ userInfo.birthday }}</el-descriptions-item>
+				<el-descriptions-item label="手机号" align="center">{{ userInfo.phoneNumber }}</el-descriptions-item>
+				<el-descriptions-item label="邮箱" align="center">{{ userInfo.emailAddress }}</el-descriptions-item>
+			</el-descriptions>
+
+		</div>
+
+		<!-- 右边部分 -->
+		<div class="content">
+			<ArticleList :type="'userPage'"/>
+		</div>
+	</div>
+
 </template>
 
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { followApi, unfollowApi, checkFollowApi, getUserInfoApi, getMasterNumApi, getFanNumApi } from '../apis/apiUser'
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
-import { getUserName } from '../utils/stores';
-import ArticleList from '../components/lists/ArticleList.vue';
-import CollectionList from '../components/lists/CollectionList.vue';
+
+import { checkFollowApi, followApi, getFanNumApi, getMasterNumApi, getUserInfoApi, unfollowApi } from '../apis/apiUser'
+import { useUserStore } from '../utils/stores';
+import ArticleList from '../components/ArticleList.vue';
+import type { UserInfoFormDisplay } from '../utils/infs';
 
 const route = useRoute()
 const router = useRouter()
-const userName = route.params.userName
+const userName = route.params.userName as string
 const showFollowButton = ref(0) // 不显示为0，关注为1，取关为2
 const followCondition = ref({
-    'masterNum': 0,
-    'fanNum': 0,
+	'masterNum': 0,
+	'fanNum': 0,
 })
 
-const activeName = ref('article')
+const userStoreObject = useUserStore()
 
-
-const userInfo = ref({
-    'userName': '',
-    'avatarPicUid': '',
-    'bgPicUid': '',
-    'nickName': '',
-    'sex': '',
-    'birthday': '',
-    'motto': '',
-    'phoneNumber': '',
-    'emailAddress': '',
-    'school': '',
-    'masterNum': 0,
-    'fanNum': 0,
+const userInfo = ref<UserInfoFormDisplay>({
+	'userName': '',
+	'nickName': '',
+	'gender': 0,
+	'biography': '',
+	'birthday': '',
+	'phoneNumber': '',
+	'emailAddress': '',
+	'avatarHash': '',
 })
 const sexDict = {
-    '0': '保密',
-    '1': '男',
-    '2': '女',
+	'0': '保密',
+	'1': '男',
+	'2': '女',
 }
 async function fetchUserInfo() {
-    try {
-        const response = await getUserInfoApi(userName)
-        if (response === "未找到用户") router.push("/pageNotFound")
-        for (var key in response) {
-            if (key === 'sex') {
-                userInfo.value[key] = sexDict[response[key]]
-            } else {
-                userInfo.value[key] = response[key]
-            }
-        }
+	try {
+		const response = await getUserInfoApi(userName)
+		if (response.code === 20002) router.push("/pageNotFound")
+		Object.assign(userInfo.value, response.data);
 
-        followCondition.value.masterNum = await getMasterNumApi(userName)
-        followCondition.value.fanNum = await getFanNumApi(userName)
-    } catch (error) {
-        console.log(error)
-        ElMessage.error("获取用户信息失败")
-    }
+		followCondition.value.masterNum = await getMasterNumApi(userName)
+		followCondition.value.fanNum = await getFanNumApi(userName)
+	} catch (error) {
+		console.log(error)
+		ElMessage.error("获取用户信息失败")
+	}
 }
 
 
 async function checkFollowButton() {
     try {
-        if (userName === getUserName()) {
-            showFollowButton.value = 0
-        } else {
-            const isFollowed = await checkFollowApi(userName)
-            if (!isFollowed) showFollowButton.value = 1
+		if(userName === userStoreObject.userName) {
+			showFollowButton.value = 0;
+		} else {
+			const isFollowed = await checkFollowApi(userName)
+			if (!isFollowed) showFollowButton.value = 1
             else showFollowButton.value = 2
-        }
+		}
     } catch (error) {
         console.log(error)
         ElMessage.error("检查关注情况失败")
     }
 }
 
-const followUser = async () => {
+async function followUser() {
     try {
         const response = await followApi(userName)
         if (response.code === 99999) {
@@ -122,7 +123,7 @@ const followUser = async () => {
     }
 }
 
-const unfollowUser = async () => {
+async function unfollowUser() {
     try {
         const response = await unfollowApi(userName)
         if (response.code === 99999) {
@@ -139,8 +140,8 @@ const unfollowUser = async () => {
 }
 
 onMounted(() => {
-    fetchUserInfo();
-    checkFollowButton();
+	fetchUserInfo();
+	checkFollowButton();
 })
 
 
@@ -148,43 +149,45 @@ onMounted(() => {
 
 
 <style scoped>
-.functions {
-    float: left;
-    padding-bottom: 20px;
-    user-select: none;
+.app-container {
+	display: flex;
+	flex-direction: row;
+	/* 水平排列 */
 }
 
-.icon-with-text {
-    position: relative;
-    display: inline-block;
-    /* 使其可以相对定位 */
-    margin-right: 10px;
-    /* 添加一些间距 */
+.sidebar {
+	width: 33.33%;
+	/* 左边占三分之一 */
+	/* background-color: #f0f2f5; */
+	border-color: #000000;
+	/* 背景颜色可根据需要调整 */
+	padding: 50px;
+	box-sizing: border-box;
+	overflow-y: auto;
+	/* 如果内容超出，则可以滚动 */
 }
 
-.icon-text {
-    position: absolute;
-    bottom: -10px;
-    /* 调整数字与图标的距离 */
-    left: 0;
-    right: 0;
-    text-align: center;
-    font-size: 12px;
-    /* 调整字体大小 */
+.user-info-top {
+	display: flex;
+	align-items: center;
 }
 
-.category {
-    float: right;
-    color: gray;
-    cursor: pointer;
+.info-text {
+	margin-left: 15px;
 }
 
-.el-pagination {
-    padding-top: 20px;
-    justify-content: center;
+.buttons {
+	margin-top: 10px;
 }
 
-.card {
-    margin-bottom: 20px;
+.user-details {
+	margin-top: 20px;
 }
-</style> -->
+
+.content {
+	flex-grow: 2;
+	/* 右边占三分之二 */
+	padding: 20px;
+	box-sizing: border-box;
+}
+</style>

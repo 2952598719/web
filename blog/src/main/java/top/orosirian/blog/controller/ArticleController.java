@@ -2,6 +2,7 @@ package top.orosirian.blog.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -45,6 +46,14 @@ public class ArticleController {
         return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "修改文章成功", null);
     }
 
+    @DeleteMapping("/article/{articleUid}")
+    @SaCheckLogin
+    public SaResult deleteArticle(@PathVariable @Valid Long articleUid) {
+        Long userUid = StpUtil.getLoginIdAsLong();
+        articleService.removeArticle(articleUid, userUid);
+        return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "删除文章成功", null);
+    }
+
     @GetMapping("/article/{articleUid}")
     public SaResult getArticle(@PathVariable @Valid Long articleUid) {
         ArticleDetailVO article = articleService.searchArticle(articleUid);
@@ -52,12 +61,23 @@ public class ArticleController {
     }
 
     @GetMapping("/articles/home")
-    public SaResult getArticleList(@RequestParam Integer currentPage, @RequestParam Integer pageSize) {
+    public SaResult getHomeArticleList(@RequestParam Integer currentPage, @RequestParam Integer pageSize) {
         PageInfo<ArticleBriefVO> result = articleService.searchArticleList(currentPage, pageSize);
         return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "搜索文章列表成功", result);
- 
     }
 
+    @GetMapping("/articles/userPage")
+    public SaResult getUserArticleList(@RequestParam Integer currentPage, @RequestParam Integer pageSize, @RequestParam String userName) {
+        PageInfo<ArticleBriefVO> result = articleService.searchUserArticleList(currentPage, pageSize, userName);
+        return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "搜索文章列表成功", result);
+    }
 
+    @GetMapping("/articles/manage")
+    @SaCheckLogin
+    public SaResult getManageArticleList(@RequestParam Integer currentPage, @RequestParam Integer pageSize) {
+        Long userUid = StpUtil.getLoginIdAsLong();
+        PageInfo<ArticleBriefVO> result = articleService.searchUserArticleList(currentPage, pageSize, userUid);
+        return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "搜索文章列表成功", result);
+    }
     
 }

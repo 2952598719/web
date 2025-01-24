@@ -1,6 +1,6 @@
 <template>
 
-    <ArticleList :page="page"/>
+    <ArticleList :type="'home'"/>
 
     <el-button v-if="userStoreObject.isLogin" class="fixed-button" type="primary" title="plus"
         @click="gotoArticleWrite()">+</el-button>
@@ -16,10 +16,10 @@ import ArticleList from '../components/ArticleList.vue';
 
 const route = useRoute()
 const router = useRouter()
-const page = ref<number>(parseInt(route.params.page as string))
-if (!page.value) {
-    page.value = 1
-}
+// const page = ref<number>(parseInt(route.params.page as string))
+// if (!page.value) {
+//     page.value = 1
+// }
 const userStoreObject = useUserStore()
 function gotoArticleWrite() {
     router.push("/write")

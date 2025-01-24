@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.orosirian.blog.mapper.FollowMapper">
+
+    <insert id="insertFollow">
+        INSERT INTO t_follow(master_uid, fan_uid)
+        VALUES (#{masterUid}, #{fanUid})
+    </insert>
+
+    <delete id="deleteFollow">
+        DELETE 
+        FROM t_follow
+        WHERE master_uid = #{masterUid} AND fan_uid = #{fanUid}
+    </delete>
+
+    <select id="selectMasterNum">
+        SELECT COUNT(*)
+        FROM t_follow
+        WHERE fan_uid = #{fanUid}
+    </select>
+
+    <select id="selectFanNum">
+        SELECT COUNT(*)
+        FROM t_follow
+        WHERE master_uid = #{masterUid}
+    </select>
+
+    <select id="selectMasterUidList">
+        SELECT master_uid
+        FROM t_follow
+        WHERE fan_uid = #{fanUid}
+    </select>
+
+    <select id="selectFanUidList">
+        SELECT fan_uid
+        FROM t_follow
+        WHERE master_uid = #{masterUid}
+    </select>
+
+    <select id="isFollowed">
+        SELECT COUNT(*) &gt; 0
+        FROM t_follow
+        WHERE master_uid = #{masterUid} AND fan_uid = #{fanUid}
+    </select>
+
+</mapper>

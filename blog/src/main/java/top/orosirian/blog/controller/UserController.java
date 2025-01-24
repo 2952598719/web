@@ -106,4 +106,40 @@ public class UserController {
         return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "头像修改成功", null);
     }
 
+    /**
+     * 关注取关
+     */
+    @PostMapping("/user/follow/{masterUserName}")
+    @SaCheckLogin
+    public SaResult follow(@PathVariable String masterUserName) {
+        userService.follow(masterUserName, StpUtil.getLoginIdAsLong());
+        return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "关注" + masterUserName + "成功", null);
+    }
+
+    @DeleteMapping("/user/follow/{masterUserName}")
+    @SaCheckLogin
+    public SaResult unfollow(@PathVariable String masterUserName) {
+        userService.removeFollow(masterUserName, StpUtil.getLoginIdAsLong());
+        return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "取关" + masterUserName + "成功", null);
+    }
+
+    @GetMapping("/user/follow/{masterUserName}")
+    @SaCheckLogin
+    public SaResult checkFollow(@PathVariable String masterUserName) {
+        boolean isFollowed = userService.checkFollow(masterUserName, StpUtil.getLoginIdAsLong());
+        return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "检查关注成功", isFollowed);
+    }
+
+    @GetMapping("/user/info/{userName}/masterNum")
+    public SaResult getUserMasterNum(@PathVariable String userName) {
+        Integer followeeNum = userService.searchMasterNum(userName);
+        return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "关注人数获取成功", followeeNum);
+    }
+
+    @GetMapping("/user/info/{userName}/fanNum")
+    public SaResult getUserFanNum(@PathVariable String userName) {
+        Integer followerNum = userService.searchFanNum(userName);
+        return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "粉丝人数获取成功", followerNum);
+    }
+
 }

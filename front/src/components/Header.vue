@@ -20,6 +20,7 @@
                 <template #dropdown>
                     <el-dropdown-menu>
                         <el-dropdown-item command="gotoCenter">个人中心</el-dropdown-item>
+                        <el-dropdown-item command="gotoManage">文章管理</el-dropdown-item>
                         <el-dropdown-item command="logout">登出</el-dropdown-item>
                     </el-dropdown-menu>
                 </template>
@@ -112,6 +113,10 @@ function gotoUserPage() {
     router.push("/user/" + userStoreObject.userName)
 }
 
+function gotoManage() {
+    router.push("/articleList/manage/a")
+}
+
 function dialogClose() {
     dialogVisible.value = false
     activeTab.value = 'login'
@@ -122,6 +127,8 @@ function dialogClose() {
 async function handleDropdown(command: string | number | object) {
     if(command === "gotoCenter") {
         gotoCenter()
+    } else if(command === "gotoManage") {
+        gotoManage()
     } else if(command === "logout") {
         try {
             await logoutApi()

@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import top.orosirian.blog.entity.vo.ArticleBriefVO;
 import top.orosirian.blog.entity.vo.ArticleDetailVO;
 import top.orosirian.blog.mapper.ArticleMapper;
+import top.orosirian.blog.mapper.UserMapper;
 import top.orosirian.blog.utils.ResultCodeEnum;
 import top.orosirian.blog.utils.exception.BusinessException;
 
@@ -26,6 +27,9 @@ public class ArticleService {
     @Autowired
     private ArticleMapper articleMapper;
 
+    @Autowired
+    private UserMapper userMapper;
+
     public void addArticle(Long userUid, String title, String articleContent, Integer articleType) {
         Long articleUid = snowflake.nextId();
         articleMapper.insertArticle(articleUid, userUid, title, articleContent, articleType);
@@ -35,6 +39,16 @@ public class ArticleService {
     public void modifyArticle(Long articleUid, String title, String articleContent, Integer articleType) {
         articleMapper.updateArticle(articleUid, title, articleContent, articleType);
         log.info("修改文章{}成功", articleUid);
+    }
+
+    public void removeArticle(Long articleUid, Long userUid) {
+        Long authorUid = articleMapper.selectAuthorUid(articleUid);
+        if(!authorUid.equals(userUid)) {
+            throw new BusinessException(ResultCodeEnum.ARTICLE_NOT_BELONG, "文章并非当前用户所属，无法删除");
+        }
+
+        articleMapper.deleteArticle(articleUid);
+        log.info("删除文章{}成功", articleUid);
     }
 
     public ArticleDetailVO searchArticle(Long articleUid) {
@@ -54,6 +68,24 @@ public class ArticleService {
         List<ArticleBriefVO> list = articleMapper.selectArticleList();
         PageInfo<ArticleBriefVO> pageInfo = new PageInfo<>(list);
         log.info("获取第{}页文章成功", currentPage);
+        return pageInfo;
+    }
+
+    public PageInfo<ArticleBriefVO> searchUserArticleList(Integer currentPage, Integer pageSize, String userName) {
+        Long userUid = userMapper.selectUserUidFromUserName(userName);
+
+        PageHelper.startPage(currentPage, pageSize);
+        List<ArticleBriefVO> list = articleMapper.selectUserArticleList(userUid);
+        PageInfo<ArticleBriefVO> pageInfo = new PageInfo<>(list);
+        log.info("获取用户{}第{}页文章成功", userUid, currentPage);
+        return pageInfo;
+    }
+
+    public PageInfo<ArticleBriefVO> searchUserArticleList(Integer currentPage, Integer pageSize, Long userUid) {
+        PageHelper.startPage(currentPage, pageSize);
+        List<ArticleBriefVO> list = articleMapper.selectUserArticleList(userUid);
+        PageInfo<ArticleBriefVO> pageInfo = new PageInfo<>(list);
+        log.info("获取用户{}第{}页文章成功", userUid, currentPage);
         return pageInfo;
     }
     
