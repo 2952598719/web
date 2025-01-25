@@ -138,15 +138,19 @@ export async function getMasterNumApi(userName: string) {
 
 }
 
-// export async function getMasterListApi(userName: string) {
+export async function getMasterListApi(userName: string, currentPage: number, pageSize: number) {
 
-//     const response = await vanillaRequest({
-//         method: 'GET',
-//         url: '/user/info/' + userName + '/masterNum',
-//     })
-//     return response.data.data
+    const response = await vanillaRequest({
+        method: 'GET',
+        url: '/user/info/' + userName + '/masterList',
+        params: {
+            currentPage: currentPage,
+            pageSize: pageSize,
+        },
+    })
+    return response.data.data
 
-// }
+}
 
 export async function getFanNumApi(userName: string) {
 
@@ -158,13 +162,19 @@ export async function getFanNumApi(userName: string) {
 
 }
 
-// export async function getFanListApi(userName: string) {
+export async function getFanListApi(userName: string, currentPage: number, pageSize: number) {
 
-//     const response = await vanillaRequest({
-//         method: 'GET',
-//         url: '/user/info/' + userName + '/fanNum',
-//     })
-//     return response.data.data
+    const response = await vanillaRequest({
+        method: 'GET',
+        url: '/user/info/' + userName + '/fanList',
+        params: {
+            currentPage: currentPage,
+            pageSize: pageSize,
+        },
+    })
+    return response.data.data
 
-// }
+}
+
+
 

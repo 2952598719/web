@@ -18,7 +18,6 @@ app.use(ElementPlus);
 const userStore = useUserStore();
 await userStore.update()
 
-
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
     app.component(key, component)
 }

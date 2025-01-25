@@ -31,7 +31,7 @@
     </div>
     
 
-    <el-dialog v-model="infoDialogVisible" @close="infoDialogVisible = false">
+    <el-dialog v-model="infoDialogVisible" @close="infoDialogVisible = false" :lock-scroll="false">
         <el-form :model="infoForm" :rules="infoRules">
             <el-form-item label="昵称" prop="nickName">
                 <el-input v-model="infoForm.nickName" autocomplete="off" />
@@ -68,7 +68,7 @@
         </div>
     </el-dialog>
 
-    <el-dialog v-model="passWordDialogVisible" @close="passWordDialogClose">
+    <el-dialog v-model="passWordDialogVisible" @close="passWordDialogClose" :lock-scroll="false">
         <el-form :model="passWordForm" :rules="passWordRules">
             <el-form-item label="密码" prop="passWord">
                 <el-input v-model="passWordForm.passWord" autocomplete="off" type="password" show-password />
@@ -117,6 +117,7 @@ const userInfo = ref<UserInfoFormDisplay>({
     'birthday': '',
     'phoneNumber': '',
     'emailAddress': '',
+    'avatarUrl': '',
     'avatarHash': '',
 })
 const infoForm = ref<UserInfoForm>({

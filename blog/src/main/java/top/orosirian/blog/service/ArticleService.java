@@ -30,14 +30,14 @@ public class ArticleService {
     @Autowired
     private UserMapper userMapper;
 
-    public void addArticle(Long userUid, String title, String articleContent, Integer articleType) {
+    public void addArticle(Long userUid, String title, String articleContent) {
         Long articleUid = snowflake.nextId();
-        articleMapper.insertArticle(articleUid, userUid, title, articleContent, articleType);
+        articleMapper.insertArticle(articleUid, userUid, title, articleContent, 0);
         log.info("用户{}发表文章{}成功", userUid, articleUid);
     }
 
-    public void modifyArticle(Long articleUid, String title, String articleContent, Integer articleType) {
-        articleMapper.updateArticle(articleUid, title, articleContent, articleType);
+    public void modifyArticle(Long articleUid, String title, String articleContent) {
+        articleMapper.updateArticle(articleUid, title, articleContent);
         log.info("修改文章{}成功", articleUid);
     }
 

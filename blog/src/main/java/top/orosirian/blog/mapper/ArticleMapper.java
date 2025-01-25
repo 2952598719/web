@@ -12,7 +12,7 @@ public interface ArticleMapper {
 
     void insertArticle(Long articleUid, Long userUid, String title,  String articleContent, Integer articleType);
 
-    void updateArticle(Long articleUid, String title,  String articleContent, Integer articleType);
+    void updateArticle(Long articleUid, String title,  String articleContent);
 
     void deleteArticle(Long articleUid);
 

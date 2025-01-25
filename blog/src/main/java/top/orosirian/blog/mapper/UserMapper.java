@@ -5,8 +5,8 @@ import java.time.LocalDate;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import top.orosirian.blog.entity.vo.UserBasicVO;
-import top.orosirian.blog.entity.vo.UserInfoVO;
+import top.orosirian.blog.entity.vo.UserBriefVO;
+import top.orosirian.blog.entity.vo.UserDetailVO;
 
 /**
  * <p>
@@ -41,9 +41,9 @@ public interface UserMapper {
 
     Long selectAvatarUid(@Param("userUid") Long userUid);
 
-    UserBasicVO selectUserBasic(@Param("userUid") Long userUid);
+    UserBriefVO selectUserBasic(@Param("userUid") Long userUid);
 
-    UserInfoVO selectUserInfo(@Param("userUid") Long userUid); 
+    UserDetailVO selectUserInfo(@Param("userUid") Long userUid); 
 
     boolean isUserNameExists(@Param("userName") String userName);
 

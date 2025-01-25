@@ -2,6 +2,12 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="top.orosirian.blog.mapper.FollowMapper">
 
+    <resultMap id="UserBasicMap" type="top.orosirian.blog.entity.vo.UserBriefVO">
+        <result property="userName" column="user_name" />
+        <result property="nickName" column="nick_name" />
+        <result property="avatarUrl" column="image_url" />
+    </resultMap>
+
     <insert id="insertFollow">
         INSERT INTO t_follow(master_uid, fan_uid)
         VALUES (#{masterUid}, #{fanUid})
@@ -25,16 +31,20 @@
         WHERE master_uid = #{masterUid}
     </select>
 
-    <select id="selectMasterUidList">
-        SELECT master_uid
-        FROM t_follow
-        WHERE fan_uid = #{fanUid}
+    <select id="selectMasterList" resultMap="UserBasicMap">
+        SELECT u.user_name, u.nick_name, i.image_url
+        FROM t_follow f
+            LEFT JOIN t_user u ON f.master_uid = u.user_uid
+            LEFT JOIN t_image i ON u.avatar_uid = i.image_uid
+        WHERE f.fan_uid = #{fanUid} AND user_status = 0
     </select>
 
-    <select id="selectFanUidList">
-        SELECT fan_uid
-        FROM t_follow
-        WHERE master_uid = #{masterUid}
+    <select id="selectFanList" resultMap="UserBasicMap">
+        SELECT u.user_name, u.nick_name, i.image_url
+        FROM t_follow f
+            LEFT JOIN t_user u ON f.fan_uid = u.user_uid
+            LEFT JOIN t_image i ON u.avatar_uid = i.image_uid
+        WHERE f.master_uid = #{masterUid} AND user_status = 0
     </select>
 
     <select id="isFollowed">

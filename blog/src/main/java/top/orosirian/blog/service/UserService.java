@@ -1,15 +1,19 @@
 package top.orosirian.blog.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 
 import cn.dev33.satoken.secure.BCrypt;
 import cn.hutool.core.lang.Snowflake;
 import lombok.extern.slf4j.Slf4j;
 import top.orosirian.blog.entity.param.ModifyInfoParam;
-import top.orosirian.blog.entity.vo.UserBasicVO;
-import top.orosirian.blog.entity.vo.UserInfoVO;
+import top.orosirian.blog.entity.vo.UserBriefVO;
+import top.orosirian.blog.entity.vo.UserDetailVO;
 import top.orosirian.blog.mapper.FollowMapper;
 import top.orosirian.blog.mapper.ImageMapper;
 import top.orosirian.blog.mapper.UserMapper;
@@ -71,8 +75,8 @@ public class UserService {
         log.info("用户{}登出成功", userUid);
     }
 
-    public UserBasicVO checkLogin(Long userUid) {
-        UserBasicVO userBasicVO = userMapper.selectUserBasic(userUid);
+    public UserBriefVO checkLogin(Long userUid) {
+        UserBriefVO userBasicVO = userMapper.selectUserBasic(userUid);
         if(userBasicVO.getAvatarUrl() == null) {
             userBasicVO.setAvatarUrl("https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png");
         }
@@ -84,11 +88,11 @@ public class UserService {
      * 个人信息
      */
 
-    public UserInfoVO searchUserByUserName(String userName) {
+    public UserDetailVO searchUserByUserName(String userName) {
         Long userUid = userMapper.selectUserUidFromUserName(userName);
         if(userUid == null) throw new BusinessException(ResultCodeEnum.USERNAME_NOT_EXIST, "用户名不存在");
 
-        UserInfoVO userInfoVO = userMapper.selectUserInfo(userUid);
+        UserDetailVO userInfoVO = userMapper.selectUserInfo(userUid);
         log.info("获取用户{}详细信息成功", userUid);
         return userInfoVO;
     }
@@ -151,25 +155,36 @@ public class UserService {
         return isFollowed;
     }
 
-    public Integer searchMasterNum(String fanUserName) {
-        Long fanUid = userMapper.selectUserUidFromUserName(fanUserName);
-        Integer masterNum = followMapper.selectMasterNum(fanUid);
+    public Integer searchMasterNum(String userName) {
+        Long userUid = userMapper.selectUserUidFromUserName(userName);
+        Integer masterNum = followMapper.selectMasterNum(userUid);
         log.info("用户关注人数获取成功");
         return masterNum;
     }
 
-    // public PageInfo<ArticleBriefVO> searchMasterList(String fanUserName) {
-    //     Long fanUid = userMapper.selectUserUidFromUserName(fanUserName);
-    //     Integer followeeNum = followMapper.selectMasterNum(fanUid);
-    //     log.info("用户关注人数获取成功");
-    //     return followeeNum;
-    // }
+    public PageInfo<UserBriefVO> searchMasterList(Integer currentPage, Integer pageSize, String userName) {
+        Long userUid = userMapper.selectUserUidFromUserName(userName);
+        PageHelper.startPage(currentPage, pageSize);
+        List<UserBriefVO> masterList = followMapper.selectMasterList(userUid);
+        PageInfo<UserBriefVO> pageInfo = new PageInfo<>(masterList);
+        log.info("获取用户{}的第{}页关注列表成功", userUid, currentPage);
+        return pageInfo;
+    }
 
-    public Integer searchFanNum(String masterUserName) {
-        Long masterUid = userMapper.selectUserUidFromUserName(masterUserName);
-        Integer fanNum = followMapper.selectFanNum(masterUid);
+    public Integer searchFanNum(String userName) {
+        Long userUid = userMapper.selectUserUidFromUserName(userName);
+        Integer fanNum = followMapper.selectFanNum(userUid);
         log.info("用户粉丝人数获取成功");
         return fanNum;
+    }
+
+    public PageInfo<UserBriefVO> searchFanList(Integer currentPage, Integer pageSize, String userName) {
+        Long userUid = userMapper.selectUserUidFromUserName(userName);
+        PageHelper.startPage(currentPage, pageSize);
+        List<UserBriefVO> fanList = followMapper.selectFanList(userUid);
+        PageInfo<UserBriefVO> pageInfo = new PageInfo<>(fanList);
+        log.info("获取用户{}的第{}页粉丝列表成功", userUid, currentPage);
+        return pageInfo;
     }
 
     

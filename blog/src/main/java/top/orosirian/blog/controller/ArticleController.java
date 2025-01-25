@@ -35,14 +35,14 @@ public class ArticleController {
     @SaCheckLogin
     public SaResult postArticle(@RequestBody @Valid ArticleParam articleParam) {
         Long userUid = StpUtil.getLoginIdAsLong();
-        articleService.addArticle(userUid, articleParam.getTitle(), articleParam.getArticleContent(), 1);
+        articleService.addArticle(userUid, articleParam.getTitle(), articleParam.getArticleContent());
         return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "发表文章成功", null);
     }
 
     @PutMapping("/article/{articleUid}")
     @SaCheckLogin
     public SaResult putArticle(@PathVariable @Valid Long articleUid, @RequestBody @Valid ArticleParam articleParam) {
-        articleService.modifyArticle(articleUid, articleParam.getTitle(), articleParam.getArticleContent(), 1);
+        articleService.modifyArticle(articleUid, articleParam.getTitle(), articleParam.getArticleContent());
         return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "修改文章成功", null);
     }
 

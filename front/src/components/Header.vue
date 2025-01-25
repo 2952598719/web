@@ -30,7 +30,7 @@
 
     <el-divider />
 
-    <el-dialog v-model="dialogVisible" @close="dialogClose">
+    <el-dialog v-model="dialogVisible" @close="dialogClose" :lock-scroll="false">
         <el-tabs v-model="activeTab">
             <el-tab-pane label="登录" name="login">
                 <el-form :model="loginForm">

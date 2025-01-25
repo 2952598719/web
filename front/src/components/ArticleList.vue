@@ -51,6 +51,12 @@ const currentPage = ref(page);
 const { type = '' } = defineProps({type: String})
 
 
+// watch(() => route.params.userName, (newUserName) => {
+//   if (newUserName) {
+//     userName.value = newUserName as string;
+//     getArticleList();
+//   }
+// }, { immediate: true });
 
 watch(() => route.params.page, (newPage) => {
     currentPage.value = Number(newPage) || 1;
@@ -58,6 +64,7 @@ watch(() => route.params.page, (newPage) => {
 });
 
 // 文章获取
+const userName = ref(route.params.userName as string)
 const articles = ref<ArticleForm[]>([])
 const pageSize = ref(10)
 const articleCount = ref(0)
@@ -68,8 +75,7 @@ async function getArticleList() {
         if(type == 'home') {
             response.value = await getHomeArticleListApi(currentPage.value, pageSize.value);
         } else if(type == 'userPage') {
-            const userName = route.params.userName as string
-            response.value = await getUserPageArticleListApi(currentPage.value, pageSize.value, userName);
+            response.value = await getUserPageArticleListApi(currentPage.value, pageSize.value, userName.value);
         } else if(type == "manage") {
             response.value = await getManageArticleListApi(currentPage.value, pageSize.value);
         } else {

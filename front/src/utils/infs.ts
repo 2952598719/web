@@ -29,6 +29,7 @@ export interface UserInfoForm {
 
 export interface UserInfoFormDisplay extends UserInfoForm {
     userName: string;
+    avatarUrl: string;
     avatarHash: string;
 }
 

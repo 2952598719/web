@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.github.pagehelper.PageInfo;
+
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpUtil;
@@ -20,8 +22,8 @@ import top.orosirian.blog.entity.param.LoginParam;
 import top.orosirian.blog.entity.param.ModifyInfoParam;
 import top.orosirian.blog.entity.param.ModifyPassWordParam;
 import top.orosirian.blog.entity.param.RegisterParam;
-import top.orosirian.blog.entity.vo.UserBasicVO;
-import top.orosirian.blog.entity.vo.UserInfoVO;
+import top.orosirian.blog.entity.vo.UserBriefVO;
+import top.orosirian.blog.entity.vo.UserDetailVO;
 import top.orosirian.blog.service.UserService;
 import top.orosirian.blog.utils.ResultCodeEnum;
 
@@ -70,7 +72,7 @@ public class UserController {
     @GetMapping("/user/checkLogin")
     @SaCheckLogin
     public SaResult checkLogin() {
-        UserBasicVO info = userService.checkLogin(StpUtil.getLoginIdAsLong());
+        UserBriefVO info = userService.checkLogin(StpUtil.getLoginIdAsLong());
         return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "处于登陆状态", info);
     }
 
@@ -81,7 +83,7 @@ public class UserController {
 
     @GetMapping("/user/info/{userName}")
     public SaResult getUserInfo(@PathVariable String userName) {
-        UserInfoVO userInfoVO = userService.searchUserByUserName(userName);
+        UserDetailVO userInfoVO = userService.searchUserByUserName(userName);
         return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "用户详细信息获取成功", userInfoVO);
     }
 
@@ -132,14 +134,26 @@ public class UserController {
 
     @GetMapping("/user/info/{userName}/masterNum")
     public SaResult getUserMasterNum(@PathVariable String userName) {
-        Integer followeeNum = userService.searchMasterNum(userName);
-        return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "关注人数获取成功", followeeNum);
+        Integer masterNum = userService.searchMasterNum(userName);
+        return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "关注人数获取成功", masterNum);
+    }
+
+    @GetMapping("/user/info/{userName}/masterList")
+    public SaResult getUserMasterList(@RequestParam Integer currentPage, @RequestParam Integer pageSize, @PathVariable String userName) {
+        PageInfo<UserBriefVO> masterList = userService.searchMasterList(currentPage, pageSize, userName);
+        return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "关注列表获取成功", masterList);
     }
 
     @GetMapping("/user/info/{userName}/fanNum")
     public SaResult getUserFanNum(@PathVariable String userName) {
         Integer followerNum = userService.searchFanNum(userName);
         return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "粉丝人数获取成功", followerNum);
+    }
+
+    @GetMapping("/user/info/{userName}/fanList")
+    public SaResult getUserFanList(@RequestParam Integer currentPage, @RequestParam Integer pageSize, @PathVariable String userName) {
+        PageInfo<UserBriefVO> fanList = userService.searchFanList(currentPage, pageSize, userName);
+        return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "粉丝列表获取成功", fanList);
     }
 
 }

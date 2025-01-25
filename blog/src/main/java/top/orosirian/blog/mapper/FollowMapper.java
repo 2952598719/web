@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 
+import top.orosirian.blog.entity.vo.UserBriefVO;
+
 @Mapper
 public interface FollowMapper {
 
@@ -15,10 +17,9 @@ public interface FollowMapper {
 
     Integer selectFanNum(Long masterUid);
 
-    // 获取的信息包括关注者的uid和昵称
-    List<Long> selectMasterList(Long fanUid);
+    List<UserBriefVO> selectMasterList(Long fanUid);
 
-    List<Long> selectFanList(Long masterUid);
+    List<UserBriefVO> selectFanList(Long masterUid);
 
     boolean isFollowed(Long masterUid, Long fanUid);
 
