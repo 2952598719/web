@@ -52,7 +52,8 @@ CREATE TABLE t_article(
     user_uid        BIGINT NOT NULL COMMENT '作者uid',
     title           VARCHAR(255) NOT NULL COMMENT '标题',
     article_content LONGTEXT COMMENT '内容',
-    article_type    TINYINT NOT NULL DEFAULT 0 COMMENT '状态，1为正常，2为已删除',
+    article_type    TINYINT NOT NULL DEFAULT 0 COMMENT '状态，0为正常，1为已删除',
+    view_count      BIGINT NOT NULL DEFAULT 0 COMMENT '浏览数',
     create_time DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     update_time DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY(article_uid),
@@ -60,7 +61,30 @@ CREATE TABLE t_article(
     INDEX article_type_index(article_type)
 ) COMMENT '文章表';
 
+DROP TABLE IF EXISTS t_comment;
+CREATE TABLE t_comment(
+    comment_uid     BIGINT NOT NULL COMMENT '评论uid',
+    user_uid        BIGINT NOT NULL COMMENT '评论者uid',
+    article_uid     BIGINT NOT NULL COMMENT '文章uid',
+    reply_uid       BIGINT NOT NULL COMMENT '被回复评论uid，如果直接回复文章则为0',
+    comment_content TEXT NOT NULL COMMENT '评论内容',   -- TEXT可存2^16-1=65535个字符，LONGTEXT可存2^32-1个字符
+    comment_type    TINYINT NOT NULL DEFAULT 0 COMMENT '状态，0为正常，1为已删除',
+    create_time DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY(comment_uid),
+    INDEX user_uid_index(user_uid)
+) COMMENT '评论表';
 
+DROP TABLE IF EXISTS t_vote;
+CREATE TABLE t_vote(
+    target_uid      BIGINT NOT NULL COMMENT '被赞踩者uid',
+    user_uid        BIGINT NOT NULL COMMENT '赞踩者uid',
+    vote_type       BOOL NOT NULL COMMENT 'true为赞，false为踩',
+    create_time DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (target_uid, user_uid),
+    INDEX target_uid_index(target_uid, vote_type)  -- 用于统计赞踩数
+) COMMENT '赞踩表';
 
 -- ---------------
 -- 其他功能

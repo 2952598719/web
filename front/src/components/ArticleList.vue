@@ -1,6 +1,12 @@
 <template>
     <div class="card-container">
         <el-card class="card" v-for="article in articles" :key="article.articleUid">
+            <div class="article-meta-info">
+                <p class="author" v-if="type=='home'" @click="gotoUserPage(article.userName)">
+                    <el-avatar :src="article.avatarUrl" />
+                    <el-button link>作者: {{ article.nickName }}</el-button>
+                </p>
+            </div>
             <h2>
                 <el-link class="article-title" :href="`/article/${article.articleUid}`">{{ article.title }}</el-link>
             </h2>
@@ -8,11 +14,24 @@
                 <el-button @click="gotoModifyArticle(article.articleUid)" type="primary">修改</el-button>
                 <el-button @click="deleteArticle(article.articleUid)" type="danger">删除</el-button>
             </div>
-            <div class="article-meta-info">
-                <p class="author" v-if="type!='userpage'">
-                    <el-button @click="gotoUserPage(article.userName)" link>作者: {{ article.nickName }}</el-button>
-                </p>
-                <p class="date">发表日期：{{ article.createTime }}</p>
+            <p class="date">发表日期：{{ article.createTime }}</p>
+            <div class="statistics">
+                <div class="icon-with-text">
+                    <el-icon :size="20"> <CaretTop /> </el-icon>
+                    <span class="icon-text">{{ article.likeNum }}</span>
+                </div>
+                <div class="icon-with-text">
+                    <el-icon :size="20"> <CaretBottom /> </el-icon>
+                    <span class="icon-text">{{ article.dislikeNum }}</span>
+                </div>
+                <div class="icon-with-text">
+                    <el-icon :size="16"> <Comment /> </el-icon>
+                    <span class="icon-text">{{ article.commentCount }}</span>
+                </div>
+                <div class="icon-with-text">
+                    <el-icon :size="16"> <View /> </el-icon>
+                    <span class="icon-text">{{ article.viewCount }}</span>
+                </div>
             </div>
         </el-card>
     </div>
@@ -25,6 +44,7 @@
 import { ref, onMounted, watch } from 'vue';
 import { ElMessage } from 'element-plus';
 import { useRoute, useRouter } from 'vue-router';
+import { CaretTop, CaretBottom, Comment, View } from '@element-plus/icons-vue';
 
 import type { ArticleForm } from '@/utils/infs';
 import { useUserStore } from '@/utils/stores';
@@ -84,6 +104,23 @@ async function getArticleList() {
         
         articles.value = response.value.data.list
         articleCount.value = response.value.data.total
+        for (const article of articles.value) {
+            if(article.avatarUrl == null) {
+                article.avatarUrl = "https://s2.loli.net/2024/07/04/GMyYpLlrDZO4dom.png"
+            }
+            if(article.likeNum == null) {
+                article.likeNum = 0
+            }
+            if(article.dislikeNum == null) {
+                article.dislikeNum = 0
+            }
+            if(article.commentCount == null) {
+                article.commentCount = 0
+            }
+            if(article.viewCount == null) {
+                article.viewCount = 0
+            }
+        }
     } catch (error) {
         console.error('错误信息:', error)
         ElMessage.error("获取文章失败")

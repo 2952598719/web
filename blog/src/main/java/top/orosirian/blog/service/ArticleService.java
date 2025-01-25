@@ -14,6 +14,7 @@ import top.orosirian.blog.entity.vo.ArticleBriefVO;
 import top.orosirian.blog.entity.vo.ArticleDetailVO;
 import top.orosirian.blog.mapper.ArticleMapper;
 import top.orosirian.blog.mapper.UserMapper;
+import top.orosirian.blog.mapper.VoteMapper;
 import top.orosirian.blog.utils.ResultCodeEnum;
 import top.orosirian.blog.utils.exception.BusinessException;
 
@@ -29,6 +30,9 @@ public class ArticleService {
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private VoteMapper voteMapper;
 
     public void addArticle(Long userUid, String title, String articleContent) {
         Long articleUid = snowflake.nextId();
@@ -58,6 +62,7 @@ public class ArticleService {
         }
 
         ArticleDetailVO article = articleMapper.selectArticle(articleUid);
+        articleMapper.updateViewCount(articleUid);
 
         log.info("获取文章成功");
         return article;
@@ -87,6 +92,18 @@ public class ArticleService {
         PageInfo<ArticleBriefVO> pageInfo = new PageInfo<>(list);
         log.info("获取用户{}第{}页文章成功", userUid, currentPage);
         return pageInfo;
+    }
+
+    public Integer searchVoteType(Long articleUid, Long userUid) {
+        Boolean voteType = voteMapper.checkVote(articleUid, userUid);
+        log.info("获取文章{}点赞状态成功", articleUid);
+        if(voteType == null) {
+            return 0;
+        } else if(voteType) {
+            return 1;
+        } else {
+            return 2;
+        }
     }
     
 }

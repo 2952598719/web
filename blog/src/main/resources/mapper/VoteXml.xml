@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.orosirian.blog.mapper.VoteMapper">
+
+    <insert id="vote">
+        INSERT INTO t_vote(target_uid, user_uid, vote_type)
+        VALUES (#{targetUid}, #{userUid}, #{voteType})
+    </insert>
+
+    <delete id="disvote">
+        DELETE
+        FROM t_vote
+        WHERE target_uid = #{targetUid} AND user_uid = #{userUid}
+    </delete>
+
+    <!-- <select id="checkVote">
+        SELECT COUNT(*) &gt; 0
+        FROM t_vote
+        WHERE target_uid = #{targetUid} AND user_uid = #{userUid} AND vote_type = #{voteType}
+    </select> -->
+
+    <select id="checkVote">
+        SELECT vote_type
+        FROM t_vote
+        WHERE target_uid = #{targetUid} AND user_uid = #{userUid}
+    </select>
+
+</mapper>

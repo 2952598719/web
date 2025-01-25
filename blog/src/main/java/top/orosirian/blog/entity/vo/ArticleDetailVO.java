@@ -17,7 +17,17 @@ public class ArticleDetailVO {
 
     private String nickName;
 
+    private String avatarUrl;
+
     private String title;
+    
+    private Integer likeNum;
+
+    private Integer dislikeNum;
+
+    private Long viewCount;
+
+    private Integer commentCount;
 
     private String articleContent;
 

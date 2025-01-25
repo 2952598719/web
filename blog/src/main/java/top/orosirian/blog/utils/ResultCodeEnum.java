@@ -14,7 +14,14 @@ public enum ResultCodeEnum {
     USER_FOLLOW_CONFLICT(20005, "不能关注自己"),
     // 3xxxx 文章相关
     ARTICLE_NOT_EXIST(30001, "文章不存在"),
-    ARTICLE_NOT_BELONG(30002, "尝试修改不属于自己的文章")
+    ARTICLE_NOT_BELONG(30002, "尝试修改不属于自己的文章"),
+    // 4xxxx 评论相关
+    COMMENT_NOT_EXIST(40001, "评论不存在"),
+    COMMENT_NOT_BELONG_USER(40002, "尝试修改不属于自己的评论"),
+    COMMENT_NOT_BELONG_ARTICLE(40003, "该评论不属于该文章"),
+    // 赞踩相关
+    VOTE_TARGET_NOT_EXIST(50001, "赞踩目标不存在"),
+    
     ;
     
 

@@ -79,5 +79,13 @@ public class ArticleController {
         PageInfo<ArticleBriefVO> result = articleService.searchUserArticleList(currentPage, pageSize, userUid);
         return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "搜索文章列表成功", result);
     }
+
+    @GetMapping("/article/vote/{articleUid}")
+    @SaCheckLogin
+    public SaResult getVoteType(@PathVariable @Valid Long articleUid) {
+        Long userUid = StpUtil.getLoginIdAsLong();
+        Integer voteType = articleService.searchVoteType(articleUid, userUid);
+        return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "获取点赞状态成功", voteType);
+    }
     
 }

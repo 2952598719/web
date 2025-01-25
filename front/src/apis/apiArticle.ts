@@ -79,4 +79,50 @@ export async function getManageArticleListApi(currentPage: number, pageSize: num
     return response.data
 }
 
+export async function getVoteTypeApi(articleUid: string) {
+    const response = await tokenRequest({
+        method: 'GET',
+        url: '/article/vote/' + articleUid,
+    })
+    return response.data
+}
 
+export async function likeApi(articleUid: string) {
+
+    const response = await tokenRequest({
+        method: 'POST',
+        url: '/like/' + articleUid,
+    })
+    return response.data
+
+}
+    
+export async function dislikeApi(articleUid: string) {
+
+    const response = await tokenRequest({
+        method: 'POST',
+        url: '/dislike/' + articleUid,
+    })
+    return response.data
+
+}
+
+export async function cancelLikeApi(articleUid: string) {
+
+    const response = await tokenRequest({
+        method: 'DELETE',
+        url: '/like/' + articleUid,
+    })
+    return response.data
+
+}
+
+export async function cancelDislikeApi(articleUid: string) {
+
+    const response = await tokenRequest({
+        method: 'DELETE',
+        url: '/dislike/' + articleUid,
+    })
+    return response.data
+
+}

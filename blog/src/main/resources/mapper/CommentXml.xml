@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.orosirian.blog.mapper.CommentMapper">
+
+    <resultMap id="commentMap" type="top.orosirian.blog.entity.vo.CommentVO">
+        <id property="commentUid" column="comment_uid" />
+        <result property="userName" column="user_name" />
+        <result property="nickName" column="nick_name" />
+        <result property="avatarUrl" column="image_url" />
+        <result property="replyUid" column="reply_uid" />
+        <result property="commentContent" column="comment_content" />
+        <result property="likeNum" column="like_num" />
+        <result property="dislikeNum" column="dislike_num" />
+        <result property="voteType" column="vote_type" />
+        <result property="createTime" column="create_time" />
+    </resultMap>
+
+    <insert id="insertComment">
+        INSERT INTO t_comment(comment_uid, user_uid, article_uid, reply_uid, comment_content)
+        VALUES (#{commentUid}, #{userUid}, #{articleUid}, #{replyUid}, #{commentContent})
+    </insert>
+
+    <delete id="deleteComment">
+        UPDATE t_comment
+        SET comment_type = 1
+        WHERE comment_uid = #{commentUid}
+    </delete>
+
+    <select id="selectArticleCommentList" resultMap="commentMap">
+        SELECT c.comment_uid, u.user_name, u.nick_name, i.image_url, c.reply_uid, c.comment_content, 
+            (SELECT COUNT(*) FROM t_vote v WHERE c.comment_uid = v.target_uid AND vote_type = 1) AS like_num,
+            (SELECT COUNT(*) FROM t_vote v WHERE c.comment_uid = v.target_uid AND vote_type = 0) AS dislike_num,
+            (SELECT vote_type FROM t_vote v WHERE c.comment_uid = v.target_uid AND v.user_uid = #{userUid}) AS vote_type,
+            c.create_time
+        FROM t_comment AS c 
+            LEFT JOIN t_user AS u ON c.user_uid = u.user_uid
+            LEFT JOIN t_image AS i ON u.avatar_uid = i.image_uid
+        WHERE c.article_uid = #{articleUid} AND comment_type = 0
+    </select>
+
+    <select id="selectArticleCommentUidList">
+        SELECT comment_uid
+        FROM t_comment
+        WHERE article_uid = #{articleUid} AND comment_type = 0
+    </select>
+
+    <select id="selectArticleUid">
+        SELECT article_uid
+        FROM t_comment
+        WHERE comment_uid = #{commentUid}
+    </select>
+
+    <select id="selectComment" resultMap="commentMap">
+        SELECT c.comment_uid, u.user_name, u.nick_name, c.reply_uid, c.comment_content, c.create_time
+        FROM t_comment AS c 
+            LEFT JOIN t_user AS u ON c.user_uid = u.user_uid
+        WHERE c.comment_uid = #{commentUid} AND comment_type = 0
+    </select>
+
+    <select id="isCommentExist">
+        SELECT COUNT(*) &gt; 0
+        FROM t_comment
+        WHERE comment_uid = #{commentUid} AND comment_type = 0
+    </select>
+
+    <select id="isCommentBelongToArticle">
+        SELECT COUNT(*) &gt; 0
+        FROM t_comment
+        WHERE comment_uid = #{commentUid} AND article_uid = #{articleUid}
+    </select>
+
+    <select id="isCommentBelongToUser">
+        SELECT COUNT(*) &gt; 0
+        FROM t_comment
+        WHERE comment_uid = #{commentUid} AND user_uid = #{userUid}
+    </select>
+
+</mapper>

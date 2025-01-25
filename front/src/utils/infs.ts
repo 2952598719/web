@@ -13,9 +13,32 @@ export interface ArticleForm {
     articleUid: string;
     userName: string;
     nickName: string;
+    avatarUrl: string;
     title: string;
+    likeNum: number;
+    dislikeNum: number;
+    viewCount: number;
+    commentCount: number;
     articleContent: string;
     createTime: string;
+}
+
+export interface CommentForm {
+    commentUid: string;
+    articleUid: string;
+    userName: string;
+    nickName: string;
+    avatarUrl: string;
+    replyUid: string;
+    commentContent: string;
+    likeNum: number;
+    dislikeNum: number;
+    voteType: boolean;
+    realVoteType: number;
+    createTime: string;
+
+    replyType: number;
+    replyComment: CommentForm;
 }
 
 export interface UserInfoForm {

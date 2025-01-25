@@ -9,26 +9,26 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ArticleBriefVO {
+public class CommentVO {
 
-    private String articleUid;
+    private String commentUid;
 
     private String userName;
 
     private String nickName;
-
-    private String avatarUrl;
     
-    private String title;
+    private String avatarUrl;
+
+    private String replyUid;
+
+    private String commentContent;
 
     private Integer likeNum;
 
     private Integer dislikeNum;
 
-    private Long viewCount;
-
-    private Integer commentCount;
+    private Boolean voteType;
 
     private LocalDate createTime;
-
+    
 }

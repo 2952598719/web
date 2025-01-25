@@ -14,6 +14,8 @@ public interface ArticleMapper {
 
     void updateArticle(Long articleUid, String title,  String articleContent);
 
+    void updateViewCount(Long articleUid);
+
     void deleteArticle(Long articleUid);
 
     ArticleDetailVO selectArticle(Long articleUid);
@@ -25,6 +27,7 @@ public interface ArticleMapper {
     Long selectAuthorUid(Long articleUid);
 
     boolean isArticleExist(Long articleUid);
+    
     
 
     
