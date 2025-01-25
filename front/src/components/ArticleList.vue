@@ -2,7 +2,7 @@
     <div class="card-container">
         <el-card class="card" v-for="article in articles" :key="article.articleUid">
             <div class="article-meta-info">
-                <p class="author" v-if="type=='home'" @click="gotoUserPage(article.userName)">
+                <p class="author" v-if="type != 'userPage' && type != 'manage'" @click="gotoUserPage(article.userName)">
                     <el-avatar :src="article.avatarUrl" />
                     <el-button link>作者: {{ article.nickName }}</el-button>
                 </p>
@@ -48,7 +48,7 @@ import { CaretTop, CaretBottom, Comment, View } from '@element-plus/icons-vue';
 
 import type { ArticleForm } from '@/utils/infs';
 import { useUserStore } from '@/utils/stores';
-import { getHomeArticleListApi, getManageArticleListApi, getUserPageArticleListApi, deleteArticleApi } from '@/apis/apiArticle';
+import { getHomeArticleListApi, getManageArticleListApi, getUserPageArticleListApi, getTitleArticleListApi, deleteArticleApi } from '@/apis/apiArticle';
 
 onMounted(() => {
     getArticleList()
@@ -98,6 +98,9 @@ async function getArticleList() {
             response.value = await getUserPageArticleListApi(currentPage.value, pageSize.value, userName.value);
         } else if(type == "manage") {
             response.value = await getManageArticleListApi(currentPage.value, pageSize.value);
+        } else if(type == "search" || type == "tag" || type == "collection") {
+            const condition = route.params.condition as string
+            response.value = await getTitleArticleListApi(currentPage.value, pageSize.value, condition)
         } else {
             router.push("/PageNotFound")
         }

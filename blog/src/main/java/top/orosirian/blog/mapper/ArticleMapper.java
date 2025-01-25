@@ -22,6 +22,8 @@ public interface ArticleMapper {
 
     List<ArticleBriefVO> selectArticleList();
 
+    List<ArticleBriefVO> selectTitleArticleList(String title);
+
     List<ArticleBriefVO> selectUserArticleList(Long userUid);
 
     Long selectAuthorUid(Long articleUid);

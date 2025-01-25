@@ -80,6 +80,20 @@
         ORDER BY a.create_time DESC
     </select>
 
+    <select id="selectTitleArticleList" resultMap="ArticleBriefMap">
+        SELECT a.article_uid, u.user_name, u.nick_name, i.image_url, a.title, 
+            (SELECT COUNT(*) FROM t_vote v WHERE a.article_uid = v.target_uid AND v.vote_type = 1) AS like_num,
+            (SELECT COUNT(*) FROM t_vote v WHERE a.article_uid = v.target_uid AND v.vote_type = 0) AS dislike_num,
+            a.view_count,
+            (SELECT COUNT(*) FROM t_comment c WHERE a.article_uid = c.article_uid AND c.comment_type = 0) AS comment_count,
+            a.create_time
+        FROM t_article AS a 
+            LEFT JOIN t_user AS u ON a.user_uid = u.user_uid
+            LEFT JOIN t_image i ON u.avatar_uid = i.image_uid
+        WHERE a.article_type = 0 AND a.title LIKE CONCAT('%', #{title}, '%')
+        ORDER BY a.create_time DESC
+    </select>
+
     <select id="selectUserArticleList" resultMap="ArticleBriefMap">
         SELECT a.article_uid, u.user_name, u.nick_name, i.image_url, a.title, a.view_count, a.create_time
         FROM t_article AS a 

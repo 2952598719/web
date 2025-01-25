@@ -76,6 +76,14 @@ public class ArticleService {
         return pageInfo;
     }
 
+    public PageInfo<ArticleBriefVO> searchTitleArticleList(Integer currentPage, Integer pageSize, String title) {
+        PageHelper.startPage(currentPage, pageSize);
+        List<ArticleBriefVO> list = articleMapper.selectTitleArticleList(title);
+        PageInfo<ArticleBriefVO> pageInfo = new PageInfo<>(list);
+        log.info("获取第{}页文章成功", currentPage);
+        return pageInfo;
+    }
+
     public PageInfo<ArticleBriefVO> searchUserArticleList(Integer currentPage, Integer pageSize, String userName) {
         Long userUid = userMapper.selectUserUidFromUserName(userName);
 

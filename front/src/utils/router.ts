@@ -42,7 +42,7 @@ const blogRoutes = [
 		component: WriteArticle,
 	},
 	{
-		path: '/articleList/:cond/:condStr',
+		path: '/articleList/:type/:condition',
 		name: 'ArticleList',
 		component: ArticleListPage,
 	},

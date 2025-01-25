@@ -79,6 +79,18 @@ export async function getManageArticleListApi(currentPage: number, pageSize: num
     return response.data
 }
 
+export async function getTitleArticleListApi(currentPage: number, pageSize: number, title: string) {
+    const response = await vanillaRequest({
+        method: 'GET',
+        url: '/articles/search/' + title,
+        params: {
+            currentPage: currentPage,
+            pageSize: pageSize,
+        },
+    })
+    return response.data
+}
+
 export async function getVoteTypeApi(articleUid: string) {
     const response = await tokenRequest({
         method: 'GET',

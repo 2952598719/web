@@ -80,6 +80,12 @@ public class ArticleController {
         return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "搜索文章列表成功", result);
     }
 
+    @GetMapping("/articles/search/{title}")
+    public SaResult getSearchArticleList(@RequestParam Integer currentPage, @RequestParam Integer pageSize, @PathVariable @Valid String title) {
+        PageInfo<ArticleBriefVO> result = articleService.searchTitleArticleList(currentPage, pageSize, title);
+        return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "搜索文章列表成功", result);
+    }
+
     @GetMapping("/article/vote/{articleUid}")
     @SaCheckLogin
     public SaResult getVoteType(@PathVariable @Valid Long articleUid) {

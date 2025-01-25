@@ -1,5 +1,13 @@
 <template>
 
+    <div class="search">
+        <el-input v-model="searchContent" :prefix-icon="Search" @keyup.enter="gotoSearch">
+            <template #append>
+                <el-button :icon="Search" @click="gotoSearch" />
+            </template>
+        </el-input>
+    </div>
+
     <ArticleList :type="'home'"/>
 
     <el-button v-if="userStoreObject.isLogin" class="fixed-button" type="primary" title="plus"
@@ -8,27 +16,39 @@
 
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
-import { useUserStore } from '../utils/stores';
+import { UserFilled, Search } from '@element-plus/icons-vue';
 
 import ArticleList from '../components/ArticleList.vue';
+import { useUserStore } from '../utils/stores';
 
 const route = useRoute()
 const router = useRouter()
-// const page = ref<number>(parseInt(route.params.page as string))
-// if (!page.value) {
-//     page.value = 1
-// }
+
+const searchContent = ref()
+
+
 const userStoreObject = useUserStore()
 function gotoArticleWrite() {
     router.push("/write")
+}
+
+function gotoSearch() {
+    router.push("/articleList/search/" + searchContent.value)
 }
 
 </script>
 
 
 <style scoped>
+
+.search {
+    padding-top: 20px;
+    padding-bottom: 40px;
+    text-align: center;
+}
+
 .fixed-button {
     position: fixed;
     bottom: 50px;
@@ -41,4 +61,13 @@ function gotoArticleWrite() {
     line-height: 50px;
     font-size: 40px;
 }
+
+.search {
+    padding-top: 20px;
+    padding-bottom: 40px;
+    text-align: center;
+    margin-left: 25%;
+    margin-right: 25%;
+}
+
 </style>
