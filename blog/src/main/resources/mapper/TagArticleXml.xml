@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.orosirian.blog.mapper.TagArticleMapper">
+
+    <insert id="insertTagArticle">
+        INSERT IGNORE INTO t_tag_article(tag_name, article_uid)
+        VALUES (#{tagName}, #{articleUid})
+    </insert>
+
+    <delete id="deleteArticle">
+        DELETE
+        FROM t_tag_article
+        WHERE article_uid = #{articleUid}
+    </delete>
+
+    <delete id="deleteTagArticle">
+        DELETE
+        FROM t_tag_article
+        WHERE article_uid = #{articleUid} AND tag_name = #{tagName}
+    </delete>
+
+    <select id="selectTagsByArticleUid">
+        SELECT tag_name
+        FROM t_tag_article
+        WHERE article_uid = #{articleUid}
+    </select>
+
+
+</mapper>

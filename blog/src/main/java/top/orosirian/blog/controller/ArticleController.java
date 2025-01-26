@@ -30,19 +30,19 @@ public class ArticleController {
     @Autowired
     private ArticleService articleService;
 
-
     @PostMapping("/article")
     @SaCheckLogin
     public SaResult postArticle(@RequestBody @Valid ArticleParam articleParam) {
         Long userUid = StpUtil.getLoginIdAsLong();
-        articleService.addArticle(userUid, articleParam.getTitle(), articleParam.getArticleContent());
+        articleService.addArticle(userUid, articleParam.getTitle(), articleParam.getArticleContent(), articleParam.getTagStr());
         return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "发表文章成功", null);
     }
 
     @PutMapping("/article/{articleUid}")
     @SaCheckLogin
     public SaResult putArticle(@PathVariable @Valid Long articleUid, @RequestBody @Valid ArticleParam articleParam) {
-        articleService.modifyArticle(articleUid, articleParam.getTitle(), articleParam.getArticleContent());
+        Long userUid = StpUtil.getLoginIdAsLong();
+        articleService.modifyArticle(articleUid, userUid, articleParam.getTitle(), articleParam.getArticleContent(), articleParam.getTagStr(), articleParam.getOldTagStr());
         return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "修改文章成功", null);
     }
 
@@ -86,6 +86,12 @@ public class ArticleController {
         return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "搜索文章列表成功", result);
     }
 
+    @GetMapping("/articles/tag/{tagName}")
+    public SaResult getTagArticleList(@RequestParam Integer currentPage, @RequestParam Integer pageSize, @PathVariable @Valid String tagName) {
+        PageInfo<ArticleBriefVO> result = articleService.searchTagArticleList(currentPage, pageSize, tagName);
+        return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "按标签搜索文章列表成功", result);
+    }
+
     @GetMapping("/article/vote/{articleUid}")
     @SaCheckLogin
     public SaResult getVoteType(@PathVariable @Valid Long articleUid) {
@@ -93,5 +99,48 @@ public class ArticleController {
         Integer voteType = articleService.searchVoteType(articleUid, userUid);
         return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "获取点赞状态成功", voteType);
     }
+
+    @GetMapping("/article/tag/{articleUid}")
+    public SaResult getArticleTags(@PathVariable String articleUid) {
+        String tags = String.join(", ", articleService.searchArticleTag(Long.parseLong(articleUid)));
+        return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "获取文章标签列表成功", tags);  
+    }
+
+    /**
+     * 合集：收藏，取消收藏，是否收藏，获取收藏夹内文章
+     */ 
+    @PostMapping("/article/collection/{collectionUid}/{articleUid}")
+    @SaCheckLogin
+    public SaResult collect(@PathVariable String collectionUid, @PathVariable String articleUid) {
+        Long userUid = StpUtil.getLoginIdAsLong();
+        articleService.collect(userUid, Long.parseLong(collectionUid), Long.parseLong(articleUid));
+        return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "文章收藏成功", null);
+    }
+
+    @DeleteMapping("/article/collection/{collectionUid}/{articleUid}")
+    @SaCheckLogin
+    public SaResult uncollect(@PathVariable String collectionUid, @PathVariable String articleUid) {
+        Long userUid = StpUtil.getLoginIdAsLong();
+        articleService.uncollect(userUid, Long.parseLong(collectionUid), Long.parseLong(articleUid));
+        return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "文章取消收藏成功", null);
+    }
+
+    @GetMapping("/article/collection/{collectionUid}/{articleUid}")
+    @SaCheckLogin
+    public SaResult checkCollect(@PathVariable String collectionUid, @PathVariable String articleUid) {
+        Long userUid = StpUtil.getLoginIdAsLong();
+        boolean isCollect = articleService.checkCollect(userUid, Long.parseLong(collectionUid), Long.parseLong(articleUid));
+        return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "文章收藏成功", isCollect);
+    }
+
+    @GetMapping("/articles/collection/{collectionUid}")
+    public SaResult getCollectionArticleList(@PathVariable String collectionUid, @RequestParam Integer currentPage, @RequestParam Integer pageSize) {
+        PageInfo<ArticleBriefVO> result = articleService.searchCollectionArticleList(currentPage, pageSize, Long.parseLong(collectionUid));
+        return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "搜索收藏夹文章列表成功", result);
+    }
+
+
+
+    
     
 }

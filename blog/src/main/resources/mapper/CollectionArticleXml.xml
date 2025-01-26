@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.orosirian.blog.mapper.CollectionArticleMapper">
+
+    <insert id="collect">
+        INSERT INTO t_collection_article(collection_uid, article_uid)
+        VALUES (#{collectionUid}, #{articleUid})
+    </insert>
+
+    <delete id="uncollect">
+        DELETE 
+        FROM t_collection_article
+        WHERE collection_uid = #{collectionUid} AND article_uid = #{articleUid}
+    </delete>
+
+    <delete id="deleteCollection">
+        DELETE
+        FROM t_collection_article
+        WHERE collection_uid = #{collectionUid}
+    </delete>
+
+    <delete id="deleteArticle">
+        DELETE
+        FROM t_collection_article
+        WHERE article_uid = #{articleUid}
+    </delete>
+
+    <select id="selectArticleNum">
+        SELECT COUNT(*)
+        FROM t_collection_article AS ca LEFT JOIN t_article as a ON ca.article_uid = a.article_uid
+        WHERE collection_uid = #{collectionUid} AND a.article_type = 1
+    </select>
+
+    <select id="isCollectionContain">
+        SELECT COUNT(*) &gt; 0
+        FROM t_collection_article
+        WHERE collection_uid = #{collectionUid} AND article_uid = #{articleUid}
+    </select>
+
+</mapper>

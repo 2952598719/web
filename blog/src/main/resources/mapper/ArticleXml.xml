@@ -102,6 +102,26 @@
         WHERE a.article_type = 0 AND a.user_uid = #{userUid}
         ORDER BY a.create_time DESC
     </select>
+    
+    <select id="selectTagArticleList" resultMap="ArticleBriefMap">
+        SELECT a.article_uid, u.user_name, u.nick_name, i.image_url, a.title, a.view_count, a.create_time
+        FROM t_article AS a 
+            LEFT JOIN t_user AS u ON a.user_uid = u.user_uid
+            LEFT JOIN t_image i ON u.avatar_uid = i.image_uid
+            LEFT JOIN t_tag_article AS ta ON a.article_uid = ta.article_uid
+        WHERE ta.tag_name = #{tagName} AND a.article_type = 0
+        ORDER BY a.create_time DESC
+    </select>
+
+    <select id="selectCollectionArticleList" resultMap="ArticleBriefMap">
+        SELECT a.article_uid, u.user_name, u.nick_name, i.image_url, a.title, a.view_count, a.create_time
+        FROM t_collection_article AS ca
+            LEFT JOIN t_article AS a ON ca.article_uid = a.article_uid
+            LEFT JOIN t_user AS u ON a.user_uid = u.user_uid
+            LEFT JOIN t_image i ON u.avatar_uid = i.image_uid
+        WHERE ca.collection_uid = #{collectionUid} AND a.article_type = 0
+        ORDER BY a.create_time DESC
+    </select>
 
     <select id="selectAuthorUid">
         SELECT user_uid
@@ -113,6 +133,12 @@
         SELECT COUNT(*) &gt; 0
         FROM t_article
         WHERE article_uid = #{articleUid} AND article_type = 0
+    </select>
+
+    <select id="isArticleBelong">
+        SELECT COUNT(*) &gt; 0
+        FROM t_article
+        WHERE article_uid = #{articleUid} AND user_uid = #{userUid} AND article_type = 0
     </select>
 
 </mapper>

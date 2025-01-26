@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.4.1</version>
+		<version>3.4.2</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>top.orosirian</groupId>
@@ -102,8 +102,7 @@
 		<dependency>	<!-- lombok工具 -->
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-			<version>${lombok.version}</version>
-        </dependency>
+		</dependency>
 
         <dependency>	<!-- 分页插件 -->
             <groupId>com.github.pagehelper</groupId>

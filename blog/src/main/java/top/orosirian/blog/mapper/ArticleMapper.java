@@ -26,9 +26,15 @@ public interface ArticleMapper {
 
     List<ArticleBriefVO> selectUserArticleList(Long userUid);
 
+    List<ArticleBriefVO> selectTagArticleList(String tagName);
+
+    List<ArticleBriefVO> selectCollectionArticleList(Long collectionUid);
+
     Long selectAuthorUid(Long articleUid);
 
     boolean isArticleExist(Long articleUid);
+
+    boolean isArticleBelong(Long articleUid, Long userUid);
     
     
 

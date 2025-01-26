@@ -1,15 +1,13 @@
 <template>
     <div class="title">{{ title }}</div>
 
-    <div class="search">
+    <div class="search" v-if="type == 'search'">
         <el-input v-model="searchContent" :prefix-icon="Search" @keyup.enter="gotoSearch">
             <template #append>
                 <el-button :icon="Search" @click="gotoSearch" />
             </template>
         </el-input>
     </div>
-
-
 
     <!-- <div class="collection" v-if="listType === 8">
         <div class="right-button">
@@ -18,15 +16,15 @@
         </div>
         <div v-if="collection" class="collection-intro">简介：{{ collection.collectionIntro }}</div>
     </div> -->
-    
-    <ArticleList :type="type" :key="keyValue"/>
+
+    <ArticleList :type="type" :condition="condition" :key="keyValue" />
 </template>
 
 
 
 <script lang="ts" setup>
 import { onMounted, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router';
 import { Search } from '@element-plus/icons-vue';
 
 import { useUserStore } from '../utils/stores';
@@ -43,18 +41,30 @@ const searchContent = ref()
 const userStore = useUserStore()
 const keyValue = ref(1)
 
-function changeKey(){
-	keyValue.value += 1
+function changeKey() {
+    keyValue.value += 1
 }
 
-watch(() => route.params.condition, async (newCondition) => {
-  if (newCondition) {
-	changeKey()
-  }
-}, { immediate: true }); // 立即执行一次以初始化
 
-const type = route.params.type as string
-const condition = route.params.condition as string
+
+const type = ref(route.fullPath.split("/")[2])
+const condition = ref()
+if (type.value != "manage") {
+    condition.value = route.params.condition as string
+}
+
+
+// 监听 fullPath 变化
+watch(() => route.fullPath, (newVal) => {
+    const newType = newVal.split('/')[2];
+    type.value = newType;
+    if (newType !== 'manage') {
+        condition.value = route.params.condition as string;
+    }
+    initPage();
+    changeKey(); // 强制 ArticleList 组件重新渲染
+});
+
 const title = ref("")
 
 function gotoSearch() {
@@ -63,18 +73,18 @@ function gotoSearch() {
 
 
 async function initPage() {
-    if(type == "manage") {
+    if (type.value == "manage") {
         const isLogin = userStore.isLogin
-        if(!isLogin) {
+        if (!isLogin) {
             router.push("/")
         }
         title.value = "文章管理"
-    } else if(type == "search") {
-        
-    } else if(type == "collection") {
+    } else if (type.value == "search") {
+        title.value = "搜索结果：" + condition.value
+    } else if (type.value == "collection") {
 
-    } else if(type == "tag") {
-
+    } else if (type.value == "tag") {
+        title.value = "标签：" + condition.value
     } else {
         router.push("/PageNotFound")
     }
@@ -102,5 +112,4 @@ async function initPage() {
     margin-left: 25%;
     margin-right: 25%;
 }
-
 </style>

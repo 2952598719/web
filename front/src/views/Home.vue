@@ -10,7 +10,7 @@
 
     <ArticleList :type="'home'"/>
 
-    <el-button v-if="userStoreObject.isLogin" class="fixed-button" type="primary" title="plus"
+    <el-button link v-if="userStoreObject.isLogin" class="fixed-button" type="primary" title="plus"
         @click="gotoArticleWrite()">+</el-button>
 </template>
 

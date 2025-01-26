@@ -12,6 +12,15 @@
         </template>
 
         <template #extra> <!--插槽3：头像下拉框-->
+            <el-button class="collect" link @click="gotoCollection">
+                <el-icon :size="30"><Star /></el-icon>
+            </el-button>
+
+            <el-button class="manage" link @click="gotoManage">
+                <el-icon :size="30"><Document /></el-icon>
+            </el-button>
+
+
             <el-button v-if="!userStoreObject.isLogin" @click="dialogVisible = true">登录/注册</el-button>
             <el-dropdown v-else @command="handleDropdown">
                 <span @click="gotoUserPage" class="el-dropdown-link">
@@ -20,7 +29,6 @@
                 <template #dropdown>
                     <el-dropdown-menu>
                         <el-dropdown-item command="gotoCenter">个人中心</el-dropdown-item>
-                        <el-dropdown-item command="gotoManage">文章管理</el-dropdown-item>
                         <el-dropdown-item command="logout">登出</el-dropdown-item>
                     </el-dropdown-menu>
                 </template>
@@ -77,7 +85,7 @@ import { useUserStore } from '@/utils/stores';
 import { loginApi, logoutApi, registerApi } from '@/apis/apiUser';
 import { removeToken, setToken } from '@/utils/funcs';
 import { ElMessage } from 'element-plus';
-import { House, ArrowLeft } from '@element-plus/icons-vue';
+import { House, ArrowLeft, Star, Document } from '@element-plus/icons-vue';
 import type { LoginForm, RegisterForm } from '@/utils/infs';
 
 const userStoreObject = useUserStore()
@@ -114,7 +122,11 @@ function gotoUserPage() {
 }
 
 function gotoManage() {
-    router.push("/articleList/manage/a")
+    router.push("/articleList/manage")
+}
+
+function gotoCollection() {
+    router.push("/collection")
 }
 
 function dialogClose() {
@@ -127,8 +139,6 @@ function dialogClose() {
 async function handleDropdown(command: string | number | object) {
     if(command === "gotoCenter") {
         gotoCenter()
-    } else if(command === "gotoManage") {
-        gotoManage()
     } else if(command === "logout") {
         try {
             await logoutApi()
@@ -222,6 +232,16 @@ const registerRules = ref({    // 登录无需验证
 
 .el-dropdown-link:focus-visible {
     outline: unset;
+}
+
+.collect {
+    margin-right: 10px;
+    margin-top: 5px;
+}
+
+.manage {
+    margin-right: 20px;
+    margin-top: 5px;
 }
 
 </style>

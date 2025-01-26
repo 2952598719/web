@@ -79,10 +79,10 @@ export async function getManageArticleListApi(currentPage: number, pageSize: num
     return response.data
 }
 
-export async function getTitleArticleListApi(currentPage: number, pageSize: number, title: string) {
+export async function getConditionArticleListApi(currentPage: number, pageSize: number, type: string, condition: string) {
     const response = await vanillaRequest({
         method: 'GET',
-        url: '/articles/search/' + title,
+        url: '/articles/'+ type + '/' + condition,
         params: {
             currentPage: currentPage,
             pageSize: pageSize,
@@ -134,6 +134,16 @@ export async function cancelDislikeApi(articleUid: string) {
     const response = await tokenRequest({
         method: 'DELETE',
         url: '/dislike/' + articleUid,
+    })
+    return response.data
+
+}
+
+export async function getArticleTagApi(articleUid: string) {
+
+    const response = await vanillaRequest({
+        method: 'GET',
+        url: '/article/tag/' + articleUid,
     })
     return response.data
 

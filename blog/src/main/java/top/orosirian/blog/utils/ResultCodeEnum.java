@@ -17,11 +17,15 @@ public enum ResultCodeEnum {
     ARTICLE_NOT_BELONG(30002, "尝试修改不属于自己的文章"),
     // 4xxxx 评论相关
     COMMENT_NOT_EXIST(40001, "评论不存在"),
-    COMMENT_NOT_BELONG_USER(40002, "尝试修改不属于自己的评论"),
+    COMMENT_NOT_BELONG_USER(40002, "评论不属于该用户"),
     COMMENT_NOT_BELONG_ARTICLE(40003, "该评论不属于该文章"),
-    // 赞踩相关
+    // 5xxxx 赞踩相关
     VOTE_TARGET_NOT_EXIST(50001, "赞踩目标不存在"),
-    
+    // 6xxxx 收藏相关
+    COLLECTION_NOT_EXIST(60001, "收藏夹不存在"),
+    COLLECTION_NOT_BELONG_USER(60002, "收藏夹不属于该用户"),
+    COLLECTION_EXIST_ARTICLE(60003, "收藏夹中已存在该文章"),
+    COLLECTION_NOT_EXIST_ARTICLE(60004, "收藏夹中不存在该文章"),
     ;
     
 

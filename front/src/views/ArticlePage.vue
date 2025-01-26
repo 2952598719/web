@@ -24,14 +24,14 @@
             </el-icon>
             <span class="icon-text">{{ articleData.dislikeNum }}</span>
         </div>
-        <!-- <div class="icon-with-text" @click="showCollectDialog = true">
+        <div class="icon-with-text" @click="handleCollection">
             <el-icon v-if="articleData.hasCollect" color="#409efc" :size="20">
                 <StarFilled />
             </el-icon>
             <el-icon v-else :size="20">
                 <StarFilled />
             </el-icon>
-        </div> -->
+        </div>
     </div>
     <p>&nbsp;</p>
 
@@ -43,7 +43,21 @@
         阅读量：{{ articleData.viewCount + 1 }}
     </div>
 
+    <div class="tag-area">
+        <el-button v-for="tag in tags" text round bg @click="gotoTag(tag)">{{ tag }}</el-button>
+    </div>
+
     <CommentList />
+
+    <el-dialog v-model="showCollectDialog" :lock-scroll="false" :title="'收藏'" @close="showCollectDialog = false" >
+        <el-checkbox v-for="collection in collectionList" v-model="collection.selected" border>
+            {{ collection.collectionName }}
+        </el-checkbox>
+        <div class="mid-button">
+            <el-button type="primary" @click="submitCollect">提交</el-button>
+            <el-button @click="showCollectDialog = false">取消</el-button>
+        </div>
+    </el-dialog>
 
 </template>
 
@@ -54,10 +68,11 @@ import Vditor from 'vditor'
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 
-import { getArticleApi, getVoteTypeApi, likeApi, dislikeApi, cancelLikeApi, cancelDislikeApi } from '../apis/apiArticle';
+import { getArticleApi, getVoteTypeApi, likeApi, dislikeApi, cancelLikeApi, cancelDislikeApi, getArticleTagApi } from '../apis/apiArticle';
 import CommentList from '../components/CommentList.vue';
 import { useUserStore } from '../utils/stores';
-import type { ArticleForm } from '@/utils/infs';
+import type { CollectionForm, ArticleForm } from '@/utils/infs';
+import { collectApi, getCollectionOfArticleListApi, uncollectApi } from '@/apis/apiCollection';
 
 onMounted(() => {
     renderMarkdown()
@@ -67,9 +82,18 @@ onMounted(() => {
 // 路由
 const route = useRoute()
 const router = useRouter()
+const tags = ref<string[]>([])
 const userStoreObject = useUserStore()
+
+const collectionList = ref<CollectionForm[]>([])
+const showCollectDialog = ref(false)
+const originList = ref<boolean[]>([])
 function gotoUserPage(userName: string) {
     router.push("/user/" + userName)
+}
+
+function gotoTag(tagName: string) {
+    router.push("/articleList/tag/" + tagName)
 }
 
 // 文章
@@ -85,7 +109,10 @@ const articleData = ref<ArticleForm>({
     viewCount: 0,
     commentCount: 0,
     articleContent: '',
-    createTime: ''
+    createTime: '',
+    tagStr: '',
+    oldTagStr: '',
+    hasCollect: false,
 })
 const voteType = ref()
 
@@ -113,12 +140,14 @@ async function renderMarkdown() {
     try {
         const response = ref()
         response.value = await getArticleApi(articleUid)
+        tags.value = (await getArticleTagApi(articleUid)).data.split(", ")
         if (response.value.code === 99999) {
             Object.assign(articleData.value, response.value.data);
             Vditor.preview(document.getElementById("preview") as HTMLDivElement,
                 response.value.data.articleContent,
                 { mode: "light", hljs: { style: "github" } }
             );
+            
         } else {
             router.push("/PageNotFound")
             // ElMessage.error("获取文章失败")
@@ -178,6 +207,52 @@ async function handleDislike() {
     }
 }
 
+async function getCollections() {
+    try {
+        const response = await getCollectionOfArticleListApi(articleUid)
+        collectionList.value = response.data
+        originList.value = []   // 清空originList
+        articleData.value.hasCollect = false
+        collectionList.value.forEach((data) => {
+            originList.value.push(data.selected)
+            if (data.selected) {
+                articleData.value.hasCollect = true
+            }
+        })
+    } catch (error) {
+        console.log(error)
+        ElMessage.error("获取合集失败")
+    }
+}
+
+async function submitCollect() {
+    for (var i = 0; i <= collectionList.value.length - 1; i++) {
+        if (originList.value[i] && !collectionList.value[i].selected) {
+            try {
+                await uncollectApi(collectionList.value[i].collectionUid, articleUid); // 等待操作完成
+            } catch (error) {
+                console.log(error);
+                ElMessage.error("取消收藏失败")
+            }
+        } else if (!originList.value[i] && collectionList.value[i].selected) {
+            try {
+                await collectApi(collectionList.value[i].collectionUid, articleUid); // 等待操作完成
+            } catch (error) {
+                console.log(error);
+                ElMessage.error("收藏失败")
+            }
+        }
+    }
+    ElMessage.success("修改收藏成功")
+    await getCollections(); // 等待获取收藏情况完成
+    showCollectDialog.value = false
+}
+
+async function handleCollection() {
+    await getCollections()
+    showCollectDialog.value = true
+}
+
 </script>
 
 
@@ -230,4 +305,11 @@ async function handleDislike() {
     margin-left: 25%;
     margin-right: 25%;
 }
+
+.tag-area {
+    margin-top: 20px;
+    margin-left: 25%;
+    margin-right: 25%;
+}
+
 </style>

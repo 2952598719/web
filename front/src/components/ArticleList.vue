@@ -4,7 +4,7 @@
             <div class="article-meta-info">
                 <p class="author" v-if="type != 'userPage' && type != 'manage'" @click="gotoUserPage(article.userName)">
                     <el-avatar :src="article.avatarUrl" />
-                    <el-button link>作者: {{ article.nickName }}</el-button>
+                    <span>作者: {{ article.nickName }}</span>
                 </p>
             </div>
             <h2>
@@ -48,7 +48,7 @@ import { CaretTop, CaretBottom, Comment, View } from '@element-plus/icons-vue';
 
 import type { ArticleForm } from '@/utils/infs';
 import { useUserStore } from '@/utils/stores';
-import { getHomeArticleListApi, getManageArticleListApi, getUserPageArticleListApi, getTitleArticleListApi, deleteArticleApi } from '@/apis/apiArticle';
+import { getHomeArticleListApi, getManageArticleListApi, getUserPageArticleListApi, deleteArticleApi, getConditionArticleListApi } from '@/apis/apiArticle';
 
 onMounted(() => {
     getArticleList()
@@ -68,7 +68,7 @@ function gotoModifyArticle(articleUid: string) {
 // 接收参数
 const page = route.query.page ? Number(route.query.page) : 1;
 const currentPage = ref(page);
-const { type = '' } = defineProps({type: String})
+const { type = '', condition = '' } = defineProps({type: String, condition: String})
 
 
 // watch(() => route.params.userName, (newUserName) => {
@@ -82,6 +82,12 @@ watch(() => route.params.page, (newPage) => {
     currentPage.value = Number(newPage) || 1;
     getArticleList();
 });
+
+watch(() => [type, condition], async ([newType, newCondition]) => {
+    if(newType === 'collection' && newCondition) {
+        await getArticleList();
+    }
+}, { immediate: true });
 
 // 文章获取
 const userName = ref(route.params.userName as string)
@@ -98,10 +104,16 @@ async function getArticleList() {
             response.value = await getUserPageArticleListApi(currentPage.value, pageSize.value, userName.value);
         } else if(type == "manage") {
             response.value = await getManageArticleListApi(currentPage.value, pageSize.value);
-        } else if(type == "search" || type == "tag" || type == "collection") {
-            const condition = route.params.condition as string
-            response.value = await getTitleArticleListApi(currentPage.value, pageSize.value, condition)
-        } else {
+        } else if(type == "search" || type == "tag") {
+            response.value = await getConditionArticleListApi(currentPage.value, pageSize.value, type, condition)
+        } else if(type == "collection") {
+            if(condition != "") {
+                response.value = await getConditionArticleListApi(currentPage.value, pageSize.value, type, condition)
+            } else {
+                return;
+            }
+        }
+        else {
             router.push("/PageNotFound")
         }
         

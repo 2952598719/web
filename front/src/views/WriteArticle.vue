@@ -9,12 +9,14 @@
         </div>
     </div>
 
+    <el-input v-model="tagStr" style="width: 500px" placeholder="请输入标签，以逗号分隔" />
+
     <div id="vditor"></div>
 
 </template>
 
 
-<script setup>
+<script lang="ts" setup>
 import { ref, onMounted } from 'vue';
 import Vditor from 'vditor'
 import 'vditor/dist/index.css';
@@ -23,8 +25,9 @@ import { useRoute, useRouter } from 'vue-router';
 import { Edit } from '@element-plus/icons-vue';
 
 import { uploadImageApi } from '../apis/apiImage';
-import { postArticleApi, putArticleApi, getArticleApi } from '../apis/apiArticle';
+import { postArticleApi, putArticleApi, getArticleApi, getArticleTagApi } from '../apis/apiArticle';
 import { useUserStore } from '../utils/stores';
+import type { ArticleForm } from '@/utils/infs';
 
 onMounted(async () => {
     if(userStoreObject.isLogin) {
@@ -40,6 +43,7 @@ onMounted(async () => {
             after() {
                 if (articleUid != null) {
                     getThisArticle(articleUid)
+                    getArticleTag(articleUid)
                 } else {
                     vditor.value.setValue('\n')
                 }
@@ -55,18 +59,20 @@ onMounted(async () => {
 // 路由
 const route = useRoute()
 const router = useRouter()
-const articleUid = route.params.articleUid
+const articleUid = route.params.articleUid as string
 
 // vditor
 const vditor = ref()
 
 // 其他信息
 const title = ref('')
+const oldTagStr = ref('')
+const tagStr = ref('')
 const userStoreObject = useUserStore()
 
 // 函数
 // 实在没办法弄成居中
-async function insertImage(files) {
+async function insertImage(files: File[]) {
     try {
         const response = await uploadImageApi(files[0]);
         vditor.value.insertValue(`![图片](${response.url})`);
@@ -78,8 +84,20 @@ async function insertImage(files) {
         throw error; // 抛出错误，以便 Vditor 可以处理。没有这一句，返回类型上就会报错：函数缺少结束 return 语句，返回类型不包括 "undefined"
     }
 }
-
-async function getThisArticle(articleUid) {
+async function getArticleTag(articleUid: string) {
+    try {
+        const articleTagResponse = await getArticleTagApi(articleUid)
+        if (articleTagResponse.code === 99999) {
+            oldTagStr.value = articleTagResponse.data
+            tagStr.value = oldTagStr.value
+        } else {
+            console.error('Error fetching article');
+        }
+    } catch (error) {
+        console.error('Errorfetching article:', error);
+    }
+}
+async function getThisArticle(articleUid: string) {
     try {
         const articleResponse = await getArticleApi(articleUid)
         if (articleResponse.code === 99999) {
@@ -87,7 +105,7 @@ async function getThisArticle(articleUid) {
             title.value = article.title
             vditor.value.setValue(article.articleContent)
         } else {
-            console.error('Error fetching article:', error);
+            console.error('Error fetching article');
         }
     } catch (error) {
         console.error('Error fetching article:', error);
@@ -105,16 +123,28 @@ async function submit() {
             ElMessage.error("文章内容不能为空")
             return;
         }
-        const data = {
-            'title': title.value,
-            'articleContent': content,
-        }
+        const data = ref<ArticleForm>({
+            title: title.value,
+            articleContent: content,
+            tagStr: tagStr.value,
+            oldTagStr: oldTagStr.value,
+            articleUid: '',
+            userName: '',
+            nickName: '',
+            avatarUrl: '',
+            likeNum: 0,
+            dislikeNum: 0,
+            viewCount: 0,
+            commentCount: 0,
+            createTime: ''
+        })
 
-        const submitResponse = ref([])
+        const submitResponse = ref()
         if (articleUid == null) {
-            submitResponse.value = await postArticleApi(data)
+            submitResponse.value = await postArticleApi(data.value)
         } else {
-            submitResponse.value = await putArticleApi(articleUid, data)
+            console.log(data.value)
+            submitResponse.value = await putArticleApi(articleUid, data.value)
         }
         if (submitResponse.value.code === 99999) {
             ElMessage.success("成功发表文章")

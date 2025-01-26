@@ -86,6 +86,38 @@ CREATE TABLE t_vote(
     INDEX target_uid_index(target_uid, vote_type)  -- 用于统计赞踩数
 ) COMMENT '赞踩表';
 
+DROP TABLE IF EXISTS t_tag_article;
+CREATE TABLE t_tag_article(
+    tag_name        VARCHAR(20) NOT NULL COMMENT '标签名',
+    article_uid     BIGINT NOT NULL COMMENT '文章uid',
+    create_time     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY(tag_name, article_uid),
+    INDEX tag_name_index(tag_name)
+) COMMENT '标签文章表'
+
+DROP TABLE IF EXISTS t_collection;
+CREATE TABLE t_collection(  -- 合集也兼当收藏夹的功能
+    collection_uid      BIGINT NOT NULL COMMENT '合集uid',
+    user_uid            BIGINT NOT NULL COMMENT '所属用户uid',
+    collection_name     VARCHAR(255) NOT NULL COMMENT '合集名',
+    create_time DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY(collection_uid),
+    INDEX user_uid_index(user_uid)
+) COMMENT '合集表';
+
+DROP TABLE IF EXISTS t_collection_article;
+CREATE TABLE t_collection_article(
+    collection_uid    BIGINT NOT NULL COMMENT '所属合集uid',
+    article_uid     BIGINT NOT NULL COMMENT '文章uid',
+    create_time DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY(collection_uid, article_uid),
+    INDEX collection_uid_index(collection_uid),
+    INDEX article_uid_index(article_uid)    -- 用于统计文章收藏数
+) COMMENT '合集文章表';
+
 -- ---------------
 -- 其他功能
 -- ---------------

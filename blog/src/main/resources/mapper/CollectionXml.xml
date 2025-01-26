@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.orosirian.blog.mapper.CollectionMapper">
+
+    <resultMap id="CollectionMap" type="top.orosirian.blog.entity.vo.CollectionVO">
+        <id property="collectionUid" column="collection_uid" />
+        <result property="collectionName" column="collection_name" />
+        <result property="selected" column="selected" />
+    </resultMap>
+
+    <insert id="insertCollection">
+        INSERT INTO t_collection(collection_uid, user_uid, collection_name)
+        VALUES (#{collectionUid}, #{userUid}, #{collectionName})
+    </insert>
+
+
+    <delete id="deleteCollection">
+        DELETE
+        FROM t_collection
+        WHERE collection_uid = #{collectionUid}
+    </delete>
+
+
+    <update id="updateCollection">
+        UPDATE t_collection
+        SET collection_name = #{collectionName}
+        WHERE collection_uid = #{collectionUid}
+    </update>
+
+    <select id="selectUserCollectionList" resultMap="CollectionMap">
+        SELECT c.collection_uid, u.user_name, u.nick_name, c.collection_name, c.show_collection, c.collection_intro
+        FROM t_collection AS c LEFT JOIN t_user AS u ON c.user_uid = u.user_uid
+        WHERE c.user_uid = #{userUid} AND c.show_collection = 1
+    </select>
+
+    <select id="selectMyCollectionList" resultMap="CollectionMap">
+        SELECT c.collection_uid, c.collection_name
+        FROM t_collection AS c LEFT JOIN t_user AS u ON c.user_uid = u.user_uid
+        WHERE c.user_uid = #{userUid}
+    </select>
+
+    <select id="selectCollection" resultMap="CollectionMap">
+        SELECT c.collection_uid, u.user_name, u.nick_name, c.collection_name, c.show_collection, c.collection_intro
+        FROM t_collection AS c LEFT JOIN t_user AS u ON c.user_uid = u.user_uid
+        WHERE c.collection_uid = #{collectionUid}
+    </select>
+
+    <select id="selectCollectionUidList">
+        SELECT collection_uid
+        FROM t_collection
+        WHERE user_uid = #{collectionUid}
+    </select>
+
+    <select id="selectCollectionOfArticleList" resultMap="CollectionMap">
+        SELECT collection_uid, collection_name
+        FROM t_collection
+        WHERE user_uid = #{userUid}
+    </select>
+
+    <select id="selectCollectionList" resultMap="CollectionMap">
+        SELECT c.collection_uid, u.user_name, u.nick_name, c.collection_name, c.show_collection, c.collection_intro
+        FROM t_collection AS c LEFT JOIN t_user AS u ON c.user_uid = u.user_uid
+        WHERE c.collection_name LIKE CONCAT("%", #{collectionName}, "%") AND c.show_collection = 1
+    </select>
+
+    <select id="isCollectionExists">
+        SELECT COUNT(*) &gt; 0
+        FROM t_collection
+        WHERE collection_uid = #{collectionUid}
+    </select>
+
+    <select id="isCollectionBelong">
+        SELECT COUNT(*) &gt; 0
+        FROM t_collection
+        WHERE collection_uid = #{collectionUid} AND user_uid = #{userUid}
+    </select>
+
+</mapper>

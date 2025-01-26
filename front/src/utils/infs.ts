@@ -21,6 +21,9 @@ export interface ArticleForm {
     commentCount: number;
     articleContent: string;
     createTime: string;
+    tagStr: string;
+    oldTagStr: string;
+    hasCollect: boolean;
 }
 
 export interface CommentForm {
@@ -60,3 +63,12 @@ export interface PassWordForm {
     passWord: string;
 }
 
+export interface CollectionForm {
+    collectionUid: string;
+    collectionName: string;
+    selected: boolean;
+}
+
+export interface Collection {
+    collectionName: string;
+}

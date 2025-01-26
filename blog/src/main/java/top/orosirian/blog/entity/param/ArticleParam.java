@@ -19,4 +19,8 @@ public class ArticleParam {
     @NotBlank(message = "内容不能为空")
     private String articleContent;
 
+    private String tagStr;
+
+    private String oldTagStr;
+
 }

@@ -5,6 +5,7 @@ import UserPage from '../views/UserPage.vue';
 import ArticlePage from '../views/ArticlePage.vue'
 import WriteArticle from '../views/WriteArticle.vue';
 import ArticleListPage from '../views/ArticleListPage.vue';
+import Collection from '../views/Collection.vue';
 import PageNotFound from '../views/PageNotFound.vue';
 
 
@@ -42,9 +43,19 @@ const blogRoutes = [
 		component: WriteArticle,
 	},
 	{
+		path: '/articleList/manage',
+		name: 'ManageCenter',
+		component: ArticleListPage,
+	},
+	{
 		path: '/articleList/:type/:condition',
 		name: 'ArticleList',
 		component: ArticleListPage,
+	},
+	{
+		path: '/collection',
+		name: 'Collection',
+		component: Collection,
 	},
 	// 捕获路径
 	{
