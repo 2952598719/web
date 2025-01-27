@@ -70,5 +70,6 @@ export interface CollectionForm {
 }
 
 export interface Collection {
+    collectionUid: string;
     collectionName: string;
 }

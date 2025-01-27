@@ -21,9 +21,9 @@
                     &nbsp;
                     <span class="date">{{ comment.createTime }}</span>
                     <el-button class="delete-comment" v-if="comment.userName == userName"
-                        @click="deleteThisComment(comment.commentUid)" type="danger" link>删除</el-button>
+                        @click="confirmDeleteComment(comment.commentUid)" type="danger" link>删除</el-button>
                 </p>
-                <div class="comment-detail" v-html="comment.commentContent" /> <!--用v-html而不是{{  }}才能显示<br>为换行-->
+                <div class="comment-detail" v-html="comment.commentContent" />
                 <div class="functions" v-if="userStoreObject.isLogin">
                     <div class="icon-with-text" @click="handleLikeComment(comment)">
                         <el-icon v-if="comment.realVoteType == 1" color="#409efc" :size="20">
@@ -58,14 +58,13 @@
         @click="handleArticleComment">+</el-button>
 
     <el-drawer v-model="showDrawer" :title="drawerTitle" :direction="'btt'" :before-close="cancelComment" size="50%">
-        <el-input class="comment-input" v-model="textarea" :rows="8" type="textarea" placeholder="Please input" />
+        <el-input class="comment-input" v-model="textarea" :rows="8" type="textarea" placeholder="请输入评论内容" />
         <div class="comment-buttons">
             <el-button type="primary" @click="submitComment">发表</el-button>
             <el-button type="default" @click="cancelComment">取消</el-button>
         </div>
     </el-drawer>
 </template>
-
 
 <script lang="ts" setup>
 import { ref, onMounted } from 'vue'
@@ -74,7 +73,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { getCommentListApi, postArticleCommentApi, postCommentCommentApi, deleteCommentApi, getCommentApi,
     likeCommentApi, cancelLikeCommentApi, dislikeCommentApi, cancelDislikeCommentApi
 } from '../apis/apiComment';
-import { ElMessage } from 'element-plus';
+import { ElMessage, ElMessageBox } from 'element-plus';
 import type { CommentForm } from '../utils/infs';
 
 onMounted(() => {
@@ -103,7 +102,10 @@ const showDrawer = ref(false)
 const drawerTitle = ref()
 const commentType = ref(true)
 const commentUid = ref()
+const isLoading = ref(false)
+
 async function getComments(currentPage: number, pageSize: number) {
+    isLoading.value = true
     try {
         const response = (await getCommentListApi(currentPage, pageSize, articleUid)).data
         comments.value = response.list
@@ -127,21 +129,19 @@ async function getComments(currentPage: number, pageSize: number) {
                 }
             } else {
                 comments.value[i].replyType = 0
-                // comments.value[i].replyComment.commentContent = ''
             }
         }
     } catch (error) {
         console.log(error)
         ElMessage.error("获取评论失败")
+    } finally {
+        isLoading.value = false
     }
 }
-
-
 
 // 发表评论
 async function submitComment() {
     try {
-        const response = ref()
         if (textarea.value === '') {
             ElMessage.error("评论不能为空")
             return;
@@ -149,13 +149,11 @@ async function submitComment() {
 
         const commentContent = textarea.value.replace(/\n/g, '<br>')
 
-        if (commentType.value) {
-            response.value = await postArticleCommentApi(articleUid, commentContent)
-        } else {
-            response.value = await postCommentCommentApi(articleUid, commentUid.value, commentContent)
-        }
+        const response = commentType.value 
+            ? await postArticleCommentApi(articleUid, commentContent)
+            : await postCommentCommentApi(articleUid, commentUid.value, commentContent)
 
-        if (response.value.code === 99999) {
+        if (response.code === 99999) {
             ElMessage.success("发表评论成功")
             cancelComment()
         } else {
@@ -168,8 +166,6 @@ async function submitComment() {
         getComments(1, pageSize.value)
     }
 }
-
-
 
 async function handleArticleComment() {
     commentType.value = true
@@ -194,6 +190,18 @@ async function handlePageChange(newPage: number) {
     getComments(newPage, pageSize.value)
 }
 
+async function confirmDeleteComment(commentUid: string) {
+    try {
+        await ElMessageBox.confirm('确定要删除这条评论吗？', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning',
+        })
+        await deleteThisComment(commentUid)
+    } catch (error) {
+        console.log(error)
+    }
+}
 
 async function deleteThisComment(commentUid: string) {
     try {
@@ -215,57 +223,49 @@ async function handleLikeComment(comment: CommentForm) {
         if (comment.realVoteType == 0) {
             await likeCommentApi(comment.commentUid)
             comment.realVoteType = 1
-            ElMessage.success("点赞成功")
             comment.likeNum += 1
         } else if (comment.realVoteType == 1) {
             await cancelLikeCommentApi(comment.commentUid)
             comment.realVoteType = 0
-            ElMessage.success("取消点赞成功")
             comment.likeNum -= 1
         } else if (comment.realVoteType == 2) {
             await cancelDislikeCommentApi(comment.commentUid)
             await likeCommentApi(comment.commentUid)
             comment.realVoteType = 1
-            ElMessage.success("点赞成功")
             comment.dislikeNum -= 1
             comment.likeNum += 1
         }
     } catch (error) {
         console.log(error)
-        ElMessage.error("点赞失败")
+        ElMessage.error("操作失败")
     }
 }
+
 async function handleDislikeComment(comment: CommentForm) {
     try {
         if (comment.realVoteType == 0) {
             await dislikeCommentApi(comment.commentUid)
-            ElMessage.success("点踩成功")
             comment.realVoteType = 2
             comment.dislikeNum += 1
         } else if (comment.realVoteType == 1) {
             await cancelLikeCommentApi(comment.commentUid)
             await dislikeCommentApi(comment.commentUid)
-            ElMessage.success("点踩成功")
             comment.realVoteType = 2
             comment.likeNum -= 1
             comment.dislikeNum += 1
         } else if (comment.realVoteType == 2) {
             await cancelDislikeCommentApi(comment.commentUid)
-            ElMessage.success("取消点踩成功")
             comment.realVoteType = 0
             comment.dislikeNum -= 1
         }
     } catch (error) {
         console.log(error)
-        ElMessage.error("点踩失败")
+        ElMessage.error("操作失败")
     }
 }
-
 </script>
 
-
 <style scoped>
-
 .functions {
     float: right;
     user-select: none;
@@ -276,32 +276,21 @@ async function handleDislikeComment(comment: CommentForm) {
 .icon-with-text {
     position: relative;
     display: inline-block;
-    /* 使其可以相对定位 */
     margin-right: 10px;
-    /* 添加一些间距 */
     cursor: pointer;
 }
 
 .icon-text {
     position: absolute;
     bottom: -10px;
-    /* 调整数字与图标的距离 */
     left: 0;
     right: 0;
     text-align: center;
     font-size: 12px;
-    /* 调整字体大小 */
 }
-
-.title {
-    text-align: center;
-    font-family: "微软雅黑";
-    font-size: 30px;
-}
-
 
 .comment-input {
-    width: 1450px;
+    width: 100%;
 }
 
 .fixed-button {
@@ -312,7 +301,6 @@ async function handleDislikeComment(comment: CommentForm) {
     width: 60px;
     height: 60px;
     z-index: 999;
-    /* 字体相关 */
     line-height: 50px;
     font-size: 40px;
 }
@@ -346,13 +334,8 @@ async function handleDislikeComment(comment: CommentForm) {
     color: gray;
 }
 
-.el-input {
-    width: 800px;
-}
-
 .comment-area {
     margin-left: 25%;
     margin-right: 25%;
 }
-
 </style>

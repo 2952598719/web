@@ -34,7 +34,7 @@
 
     <update id="deleteUser">
         UPDATE t_user
-        SET user_status = 1, user_name = #{newUserName}, nick_name = #{newNickName}
+        SET user_status = 1, user_name = #{newUserName}, nick_name = #{newNickName}, avatar_uid = 1883682576716140544
         WHERE user_uid = #{userUid}
     </update>
 
@@ -81,19 +81,19 @@
     <select id="selectAvatarUid">
         SELECT avatar_uid
         FROM t_user
-        WHERE user_uid = #{userUid} AND user_status = 0
+        WHERE user_uid = #{userUid}
     </select>
 
     <select id="selectUserBasic" resultMap="UserBasicMap">
         SELECT u.user_name, u.nick_name, i.image_url
         FROM t_user u LEFT JOIN t_image i ON u.avatar_uid = i.image_uid
-        WHERE user_uid = #{userUid} AND user_status = 0
+        WHERE user_uid = #{userUid}
     </select>
 
     <select id="selectUserInfo" resultMap="UserInfoMap">
         SELECT u.user_name, u.nick_name, u.gender, u.biography, u.birthday, u.phone_number, u.email_address, i.image_url, i.image_hash
         FROM t_user as u LEFT JOIN t_image as i ON u.avatar_uid = i.image_uid
-        WHERE user_uid = #{userUid} AND user_status = 0
+        WHERE user_uid = #{userUid}
     </select>
 
     <select id="isUserNameExists">

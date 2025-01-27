@@ -96,7 +96,7 @@ export async function deleteCollectionApi(collectionUid: string) {
 
 }
 
-export async function modifyCollectionApi(collectionUid: string, data: CollectionForm) {
+export async function modifyCollectionApi(collectionUid: string, data: Collection) {
 
     const response = await tokenRequest({
         method: 'PUT',

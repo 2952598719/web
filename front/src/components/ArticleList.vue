@@ -1,42 +1,56 @@
 <template>
     <div class="card-container">
         <el-card class="card" v-for="article in articles" :key="article.articleUid">
-            <div class="article-meta-info">
-                <p class="author" v-if="type != 'userPage' && type != 'manage'" @click="gotoUserPage(article.userName)">
-                    <el-avatar :src="article.avatarUrl" />
-                    <span>作者: {{ article.nickName }}</span>
-                </p>
+            <div class="header">
+                <div class="left">
+                    <h2>
+                        <el-link class="article-title" :href="`/article/${article.articleUid}`">{{ article.title }}</el-link>
+                    </h2>
+                </div>
+                <div class="right">
+                    <div class="article-meta-info" v-if="type != 'userPage' && type != 'manage'">
+                        <div class="author" @click="gotoUserPage(article.userName)">
+                            <el-avatar :src="article.avatarUrl" />
+                            <span class="author-name">{{ article.nickName }}</span>
+                        </div>
+                    </div>
+                    <div class="func-area" v-if="type=='manage'">
+                        <el-button @click="gotoModifyArticle(article.articleUid)" text type="primary">修改</el-button>
+                        <el-button @click="deleteArticle(article.articleUid)" text type="danger">删除</el-button>
+                    </div>
+                </div>
             </div>
-            <h2>
-                <el-link class="article-title" :href="`/article/${article.articleUid}`">{{ article.title }}</el-link>
-            </h2>
-            <div class="func-area" v-if="type=='manage'">
-                <el-button @click="gotoModifyArticle(article.articleUid)" type="primary">修改</el-button>
-                <el-button @click="deleteArticle(article.articleUid)" type="danger">删除</el-button>
-            </div>
-            <p class="date">发表日期：{{ article.createTime }}</p>
-            <div class="statistics">
-                <div class="icon-with-text">
-                    <el-icon :size="20"> <CaretTop /> </el-icon>
-                    <span class="icon-text">{{ article.likeNum }}</span>
+            <div class="footer">
+                <div class="left">
+                    <div class="statistics">
+                        <div class="icon-with-text">
+                            <el-icon :size="16"> <CaretTop /> </el-icon>
+                            <span class="icon-text">{{ article.likeNum }}</span>
+                        </div>
+                        <!-- <div class="icon-with-text">
+                            <el-icon :size="20"> <CaretBottom /> </el-icon>
+                            <span class="icon-text">{{ article.dislikeNum }}</span>
+                        </div> -->
+                        <div class="icon-with-text">
+                            <el-icon :size="16"> <Comment /> </el-icon>
+                            <span class="icon-text">{{ article.commentCount }}</span>
+                        </div>
+                        <div class="icon-with-text">
+                            <el-icon :size="16"> <View /> </el-icon>
+                            <span class="icon-text">{{ article.viewCount }}</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="icon-with-text">
-                    <el-icon :size="20"> <CaretBottom /> </el-icon>
-                    <span class="icon-text">{{ article.dislikeNum }}</span>
-                </div>
-                <div class="icon-with-text">
-                    <el-icon :size="16"> <Comment /> </el-icon>
-                    <span class="icon-text">{{ article.commentCount }}</span>
-                </div>
-                <div class="icon-with-text">
-                    <el-icon :size="16"> <View /> </el-icon>
-                    <span class="icon-text">{{ article.viewCount }}</span>
+                <div class="right">
+                    <p class="date">发表日期：{{ article.createTime }}</p>
                 </div>
             </div>
         </el-card>
     </div>
     <el-pagination layout="prev, pager, next" :total="articleCount" :page-size="pageSize" :current-page="currentPage"
         @current-change="handlePageChange" background hide-on-single-page />
+
+    
 </template>
 
 
@@ -121,7 +135,7 @@ async function getArticleList() {
         articleCount.value = response.value.data.total
         for (const article of articles.value) {
             if(article.avatarUrl == null) {
-                article.avatarUrl = "https://s2.loli.net/2024/07/04/GMyYpLlrDZO4dom.png"
+                article.avatarUrl = "https://s2.loli.net/2025/01/27/Y7otDBN8cXLlFpH.jpg"
             }
             if(article.likeNum == null) {
                 article.likeNum = 0
@@ -171,56 +185,153 @@ async function deleteArticle(articleUid: string) {
     justify-content: center;
 }
 
-.statistics {
-    float: left;
-    padding-bottom: 20px;
-    user-select: none;
-}
-
-.icon-with-text {
-    position: relative;
-    display: inline-block;
-    /* 使其可以相对定位 */
-    margin-right: 10px;
-    /* 添加一些间距 */
-}
-
-.icon-text {
-    position: absolute;
-    bottom: -10px;
-    /* 调整数字与图标的距离 */
-    left: 0;
-    right: 0;
-    text-align: center;
-    font-size: 12px;
-    /* 调整字体大小 */
-}
-
-.category {
-    float: right;
-    color: gray;
-    cursor: pointer;
-}
-
 .card {
-    margin-bottom: 20px;
+    margin-bottom: 40px;
     margin-left: 25%;
     margin-right: 25%;
+    padding-left: 20px;
+    padding-right: 20px;
+    /* width: 80%; */
+    /* max-width: 800px; */
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
 .card-container {
     margin-top: 20px;
 }
 
-.title {
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.left {
+    flex: 1;
+}
+
+.right {
+    margin-left: 20px;
+}
+
+.article-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+    text-decoration: none;
+}
+
+.article-title:hover {
+    color: #409EFF;
+}
+
+.article-meta-info {
+    display: flex;
+    align-items: center;
+}
+
+.func-area {
+    margin-top: 15px;
+    text-align: right;
+}
+
+.author {
+    display: flex;
+    flex-direction: column;
+    align-items: end;
+    cursor: pointer;
+    color: #333;
+    font-size: 14px;
+}
+
+.author:hover {
+    color: #409EFF;
+}
+
+.el-avatar {
+    margin-bottom: 5px; /* 头像和作者名之间的间距 */
+}
+
+.author-name {
     text-align: center;
-    font-family: "微软雅黑";
-    font-size: 30px;
-    padding-bottom: 50px;
+    font-size: 12px;
+    color: #666;
 }
 
-.right-button {
-    float: right;
+.footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15px;
 }
 
+.statistics {
+    display: flex;
+    align-items: center;
+    user-select: none;
+}
+
+/* .icon-with-text-top {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-right: 8px;
+    margin-bottom: 4px;
+} */
+
+.icon-with-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-right: 10px;
+}
+
+.icon-text {
+    /* margin-top: 2px; */
+    font-size: 12px;
+    color: #666;
+}
+
+.date {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+}
+
+@media (max-width: 768px) {
+    .card {
+        width: 90%;
+        margin-left: 5%;
+        margin-right: 5%;
+    }
+
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .right {
+        margin-left: 0;
+        margin-top: 10px;
+    }
+
+    .article-title {
+        font-size: 18px;
+    }
+
+    .author {
+        font-size: 12px;
+    }
+
+    .date {
+        font-size: 12px;
+    }
+}
 </style>

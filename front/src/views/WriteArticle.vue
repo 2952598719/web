@@ -9,7 +9,7 @@
         </div>
     </div>
 
-    <el-input v-model="tagStr" style="width: 500px" placeholder="请输入标签，以逗号分隔" />
+    <el-input class="tag-area" v-model="tagStr" style="width: 500px" placeholder="请输入标签，以逗号分隔" />
 
     <div id="vditor"></div>
 
@@ -136,7 +136,8 @@ async function submit() {
             dislikeNum: 0,
             viewCount: 0,
             commentCount: 0,
-            createTime: ''
+            createTime: '',
+            hasCollect: false
         })
 
         const submitResponse = ref()
@@ -181,6 +182,14 @@ async function submit() {
 
 .buttons {
     text-align: center;
+}
+
+.tag-area {
+    text-align: center;
+    width: 1000px;
+    padding-left: 20%;
+    /* padding-right: 20%; */
+    display: flex;
 }
 
 </style>

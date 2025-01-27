@@ -10,7 +10,7 @@ public enum ResultCodeEnum {
     USERNAME_EXIST(20001, "用户名已存在"),  // 注册
     USERNAME_NOT_EXIST(20002, "用户名不存在"),  // 登录
     PASSWORD_WRONG(20003, "密码和用户名不对应"),
-    USER_NOT_EXIST(20004, "用户不存在"),
+    USER_NOT_EXIST(20004, "用户不存在或已注销"),
     USER_FOLLOW_CONFLICT(20005, "不能关注自己"),
     // 3xxxx 文章相关
     ARTICLE_NOT_EXIST(30001, "文章不存在"),

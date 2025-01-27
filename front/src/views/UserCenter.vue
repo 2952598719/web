@@ -2,34 +2,15 @@
     <span>
         <div class="avatar-container">
             <el-upload action="#" :http-request="uploadAvatarImage" :show-file-list="false">
-                <el-avatar :size=100 :src="avatarUrl" shape="square"/>
-                <!-- <el-button slot="trigger">修改头像</el-button> -->
+                <el-avatar :size=100 :src="avatarUrl" shape="square" />
             </el-upload>
         </div>
         <div class="right-button-head">
-            <el-button type="primary" @click="infoDialogVisible = true">修改信息</el-button>
-            <el-button type="primary" @click="passWordDialogVisible = true">修改密码</el-button>
-            <el-button @click="userUnregister" type="danger">注销</el-button>
+            <el-button color="#010101" @click="infoDialogVisible = true">修改信息</el-button>
+            <el-button color="#1868b2" @click="passWordDialogVisible = true">修改密码</el-button>
+            <el-button type="danger" @click="userUnregister">注销</el-button>
         </div>
     </span>
-
-    <div class="description-container">
-        <el-descriptions v-if="userInfo" :column="1" border>
-            <template #extra></template>
-            <el-descriptions-item label="用户名" align="center">{{ userInfo.userName }}</el-descriptions-item>
-            <el-descriptions-item label="昵称" align="center">{{ userInfo.nickName }}</el-descriptions-item>
-            <el-descriptions-item label="性别" align="center">
-                <span v-if="userInfo.gender === 0">保密</span>
-                <span v-else-if="userInfo.gender === 1">男</span>
-                <span v-else-if="userInfo.gender === 2">女</span>
-            </el-descriptions-item>
-            <el-descriptions-item label="生日" align="center">{{ userInfo.birthday }}</el-descriptions-item>
-            <el-descriptions-item label="手机号" align="center">{{ userInfo.phoneNumber }}</el-descriptions-item>
-            <el-descriptions-item label="邮箱" align="center">{{ userInfo.emailAddress }}</el-descriptions-item>
-            <el-descriptions-item label="个人介绍" align="center">{{ userInfo.biography }}</el-descriptions-item>
-        </el-descriptions>
-    </div>
-    
 
     <el-dialog v-model="infoDialogVisible" @close="infoDialogVisible = false" :lock-scroll="false">
         <el-form :model="infoForm" :rules="infoRules">
@@ -38,18 +19,15 @@
             </el-form-item>
             <el-form-item label="性别">
                 <el-select v-model="infoForm.gender">
-                    <el-option :key="0" :value="0" label="保密" /> <!--此处的label前面不能打冒号-->
+                    <el-option :key="0" :value="0" label="保密" />
                     <el-option :key="1" :value="1" label="男" />
                     <el-option :key="2" :value="2" label="女" />
                 </el-select>
             </el-form-item>
             <el-form-item label="生日">
                 <el-col>
-                    <el-date-picker v-model="infoForm.birthday" 
-                                    type="date" 
-                                    format="YYYY/MM/DD" 
-                                    value-format="YYYY-MM-DD"
-                                    :disabled-date="disabledDate"/>
+                    <el-date-picker v-model="infoForm.birthday" type="date" format="YYYY/MM/DD"
+                        value-format="YYYY-MM-DD" :disabled-date="disabledDate" />
                 </el-col>
             </el-form-item>
             <el-form-item label="个性签名" prop="biography">
@@ -67,6 +45,41 @@
             <el-button @click="infoDialogVisible = false">取消</el-button>
         </div>
     </el-dialog>
+
+    <div class="info-cards">
+        <el-card class="info-card">
+            <div class="info-label">用户名</div>
+            <div class="info-value">{{ userInfo.userName }}</div>
+        </el-card>
+        <el-card class="info-card">
+            <div class="info-label">昵称</div>
+            <div class="info-value">{{ userInfo.nickName }}</div>
+        </el-card>
+        <el-card class="info-card">
+            <div class="info-label">性别</div>
+            <div class="info-value">
+                <span v-if="userInfo.gender === 0">保密</span>
+                <span v-else-if="userInfo.gender === 1">男</span>
+                <span v-else-if="userInfo.gender === 2">女</span>
+            </div>
+        </el-card>
+        <el-card class="info-card">
+            <div class="info-label">生日</div>
+            <div class="info-value">{{ userInfo.birthday }}</div>
+        </el-card>
+        <el-card class="info-card">
+            <div class="info-label">手机号</div>
+            <div class="info-value">{{ userInfo.phoneNumber }}</div>
+        </el-card>
+        <el-card class="info-card">
+            <div class="info-label">邮箱</div>
+            <div class="info-value">{{ userInfo.emailAddress }}</div>
+        </el-card>
+        <el-card class="info-card">
+            <div class="info-label">个人介绍</div>
+            <div class="info-value">{{ userInfo.biography }}</div>
+        </el-card>
+    </div>
 
     <el-dialog v-model="passWordDialogVisible" @close="passWordDialogClose" :lock-scroll="false">
         <el-form :model="passWordForm" :rules="passWordRules">
@@ -135,7 +148,7 @@ const passWordForm = ref<PassWordForm>({
 
 async function fetchUserInfo() {
     try {
-        if(!userStoreObject.isLogin) {
+        if (!userStoreObject.isLogin) {
             router.push("/")
         }
         const response = await getUserInfoApi(userName.value as string)
@@ -222,7 +235,7 @@ async function userUnregister() {
 async function uploadAvatarImage(params: any) {
     try {
         const response = await uploadImageApi(params.file)
-        if(response.success === false) {
+        if (response.success === false) {
             ElMessage.error("上传头像失败")
             return
         } else {
@@ -274,81 +287,163 @@ const passWordRules = ref({
 
 
 <style lang="css" scoped>
-.cell-item {
+/* 整体布局 */
+.user-center-container {
     display: flex;
+    flex-direction: column;
     align-items: center;
+    padding: 20px;
+    background-color: #f5f5f5;
+    min-height: 100vh;
 }
 
-.functions {
-    float: left;
-    padding-bottom: 20px;
-    user-select: none;
-}
-
-.icon-with-text {
-    position: relative;
-    display: inline-block;
-    /* 使其可以相对定位 */
-    margin-right: 10px;
-    /* 添加一些间距 */
-}
-
-.icon-text {
-    position: absolute;
-    bottom: -10px;
-    /* 调整数字与图标的距离 */
-    left: 0;
-    right: 0;
-    text-align: center;
-    font-size: 12px;
-    /* 调整字体大小 */
-}
-
-/* .left-button {
-    float: left;
-  } */
-
-.mid-button {
-    text-align: center;
-}
-
-.right-button {
-    float: right;
-}
-
-.right-button-head {
-    float: right;
-    padding-bottom: 20px;
-}
-
-.category {
-    float: right;
-    color: gray;
-    cursor: pointer;
-}
-
-.el-pagination {
-    padding-top: 20px;
-    justify-content: center;
-}
-
-.card {
-    margin-bottom: 20px;
-}
-
-.collection-function {
-    padding-bottom: 20px;
-}
-
+/* 头像区域 */
 .avatar-container {
     display: flex;
     justify-content: center;
-    padding-top: 20px;
+    margin-left: 46%;
+    margin-right: 46%;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
+.avatar-container:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.el-avatar {
+    border: 2px solid #409EFF;
+    cursor: pointer;
+}
+
+/* 按钮区域 */
+.right-button-head {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.el-button {
+    border-radius: 5px;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.el-button:hover {
+    transform: translateY(-2px);
+}
+
+.el-button--primary {
+    background: linear-gradient(135deg, #409EFF, #66b1ff);
+    border: none;
+}
+
+.el-button--danger {
+    background: linear-gradient(135deg, #F56C6C, #f78989);
+    border: none;
+}
+
+/* 描述信息区域 */
 .description-container {
-    margin-left: 25%;
-    margin-right: 25%;
+    width: 60%;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
+.el-descriptions {
+    margin-top: 20px;
+}
+
+.el-descriptions-item__label {
+    font-weight: bold;
+    color: #333;
+}
+
+.el-descriptions-item__content {
+    color: #666;
+}
+
+/* 对话框样式 */
+.el-dialog {
+    border-radius: 10px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.el-form-item__label {
+    font-weight: bold;
+    color: #333;
+}
+
+.el-input,
+.el-select,
+.el-date-picker {
+    width: 100%;
+}
+
+.mid-button {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .description-container {
+        width: 90%;
+    }
+
+    .right-button-head {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+.info-cards {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(200px, 1fr)); /* 每行至少 200px，自动适应列数 */
+    gap: 20px; /* 卡片之间的间距 */
+    padding: 20px;
+}
+
+.info-card {
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* 内容均匀分布 */
+    height: auto; /* 高度自适应内容 */
+}
+
+.info-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.info-label {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.info-value {
+    font-size: 16px;
+    color: #333;
+    font-weight: bold;
+}
+
+/* 让最后一张卡片占满整行 */
+.info-card:last-child:nth-child(3n + 1) {
+    grid-column: 1 / -1; /* 占据所有列 */
+}
 </style>
