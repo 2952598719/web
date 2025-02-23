@@ -183,10 +183,10 @@ async function submitRegister (registerForm: RegisterForm) {
         const response = await registerApi(registerForm)
         if (response.code === 99999) {
             ElMessage.success("注册成功")
+            submitLogin(registerForm)
         } else {
             ElMessage.error("注册失败，原因：" + response.msg)
         }
-        submitLogin(registerForm)
     } catch (error) {
         console.log(error)
         ElMessage.error("注册失败")

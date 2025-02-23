@@ -12,11 +12,11 @@ const tokenRequest = axios.create({
 })
 
 // const vanillaRequest = axios.create({
-//     baseURL: "http://orosirian.top/api/blog",
+//     baseURL: "http://orosirian.top:8081/api/blog",
 // })
 
 // const tokenRequest = axios.create({
-//     baseURL: "http://orosirian.top/api/blog",
+//     baseURL: "http://orosirian.top:8081/api/blog",
 // })
 
 tokenRequest.interceptors.request.use(   // 发送请求前的拦截器

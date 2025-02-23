@@ -123,6 +123,15 @@
         ORDER BY a.create_time DESC
     </select>
 
+    <select id="selectMasterArticleList" resultMap="ArticleBriefMap">
+        SELECT a.article_uid, u.user_name, u.nick_name, i.image_url, a.title, a.view_count, a.create_time
+        FROM t_follow AS f
+            INNER JOIN t_article AS a ON f.master_uid = a.user_uid
+            LEFT JOIN t_user AS u ON a.user_uid = u.user_uid
+            LEFT JOIN t_image AS i ON u.avatar_uid = i.image_uid
+        WHERE f.fan_uid = #{userUid} AND a.article_type = 0
+    </select>
+
     <select id="selectAuthorUid">
         SELECT user_uid
         FROM t_article

@@ -74,7 +74,7 @@
 		</dependency>
 
 		
-		<dependency>	<!-- 提供Redis连接池 -->
+		<dependency>	<!-- 对象池管理 -->
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-pool2</artifactId>
 		</dependency>

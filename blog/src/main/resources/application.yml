@@ -8,11 +8,12 @@ spring:
   application: 
     name: blog
   datasource:
-    url : jdbc:mysql://localhost:3306/blog
+    # url : jdbc:mysql://47.121.178.97:3306/blog
+    url : jdbc:mysql://127.0.0.1:3306/blog
     driverClassName : com.mysql.cj.jdbc.Driver
+    # username : blog
     username : root
-    password : 111111
-    # password: e&jDch[=$IC&t3={}m
+    password : mysql_PBEMhH
   jackson:  # spring boot 3 很多东西都被弃用了，这里就不写了
     date-format: yyyy-MM-dd HH:mm:ss        # 和java.utils.Data配合使用，在Data类和String之间序列化和反序列化
     serialization:
@@ -28,10 +29,12 @@ spring:
   #     add-mappings: false
   data:
     redis:    # redis配置 
-      database: 1     # Redis数据库索引（默认为0）
-      host: 127.0.0.1 # Redis服务器地址
+      database: 0     # Redis数据库索引（默认为0）
+      # host: 47.121.178.97 # Redis服务器地址
+      host: 127.0.0.1
+      # username: default
       port: 6379      # Redis服务器连接端口  
-      # password: pAm#%uTa$pIM-1#FL,L,#]    # Redis服务器连接密码（默认为空）
+      password: redis_PERai4
       timeout: 10s    # 连接超时时间
       lettuce:
           pool:
@@ -51,7 +54,7 @@ logging:  # 启用生产环境专用日志格式
   level: #配置指定包的路径下应用程序的日志记录和日志级别。
     root: info
     org:
-      springframework: warn
+      springframework: WARN
   pattern:  # 输出的每条日志的格式
     console: "%X{traceId} %X{userId} %d{yyyy-MM-dd}T%d{HH:mm:ss.SSS} ${LOG_LEVEL_PATTERN:%-1p} %-1logger{39} %m%n${LOG_EXCEPTION_CONVERSION_WORD:%wEx}"
 

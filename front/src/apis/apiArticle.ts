@@ -48,7 +48,6 @@ export async function getHomeArticleListApi(currentPage: number, pageSize: numbe
         params: {
             currentPage: currentPage,
             pageSize: pageSize,
-            searchParam: ""
         },
     })
     return response.data
@@ -62,6 +61,18 @@ export async function getUserPageArticleListApi(currentPage: number, pageSize: n
             currentPage: currentPage,
             pageSize: pageSize,
             userName: userName,
+        },
+    })
+    return response.data
+}
+
+export async function getMasterArticleListApi(currentPage: number, pageSize: number) {
+    const response = await tokenRequest({
+        method: 'GET',
+        url: '/articles/master',
+        params: {
+            currentPage: currentPage,
+            pageSize: pageSize,
         },
     })
     return response.data

@@ -322,7 +322,7 @@ async function handleCollection() {
 
 .tag-area {
     margin-top: 20px;
-    margin-left: 25%;
+    margin-left: 5%;
     margin-right: 25%;
 }
 

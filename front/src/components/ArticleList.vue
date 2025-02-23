@@ -62,7 +62,7 @@ import { CaretTop, CaretBottom, Comment, View } from '@element-plus/icons-vue';
 
 import type { ArticleForm } from '@/utils/infs';
 import { useUserStore } from '@/utils/stores';
-import { getHomeArticleListApi, getManageArticleListApi, getUserPageArticleListApi, deleteArticleApi, getConditionArticleListApi } from '@/apis/apiArticle';
+import { getHomeArticleListApi, getManageArticleListApi, getUserPageArticleListApi, deleteArticleApi, getConditionArticleListApi, getMasterArticleListApi } from '@/apis/apiArticle';
 
 onMounted(() => {
     getArticleList()
@@ -84,13 +84,11 @@ const page = route.query.page ? Number(route.query.page) : 1;
 const currentPage = ref(page);
 const { type = '', condition = '' } = defineProps({type: String, condition: String})
 
-
-// watch(() => route.params.userName, (newUserName) => {
-//   if (newUserName) {
-//     userName.value = newUserName as string;
-//     getArticleList();
-//   }
-// }, { immediate: true });
+// 文章获取
+const userName = ref(route.params.userName as string)
+const articles = ref<ArticleForm[]>([])
+const pageSize = ref(10)
+const articleCount = ref(0)
 
 watch(() => route.params.page, (newPage) => {
     currentPage.value = Number(newPage) || 1;
@@ -100,21 +98,19 @@ watch(() => route.params.page, (newPage) => {
 watch(() => [type, condition], async ([newType, newCondition]) => {
     if(newType === 'collection' && newCondition) {
         await getArticleList();
+    } else if(newType == 'home' || newType == 'master') {
+        await getArticleList();
     }
 }, { immediate: true });
-
-// 文章获取
-const userName = ref(route.params.userName as string)
-const articles = ref<ArticleForm[]>([])
-const pageSize = ref(10)
-const articleCount = ref(0)
 
 async function getArticleList() {
     try {
         const response = ref()
         if(type == 'home') {
             response.value = await getHomeArticleListApi(currentPage.value, pageSize.value);
-        } else if(type == 'userPage') {
+        } else if(type == 'master') {
+            response.value = await getMasterArticleListApi(currentPage.value, pageSize.value);
+        }else if(type == 'userPage') {
             response.value = await getUserPageArticleListApi(currentPage.value, pageSize.value, userName.value);
         } else if(type == "manage") {
             response.value = await getManageArticleListApi(currentPage.value, pageSize.value);

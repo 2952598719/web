@@ -44,12 +44,12 @@ export const useUserStore = defineStore('auth', () => {
                 isLogin.value = true;
             } else {
                 userName.value = null;
-                avatarUrl.value = "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png";
+                avatarUrl.value = "";
                 isLogin.value = false
             }
         } catch (error) {
             userName.value = null;
-            avatarUrl.value = "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png";
+            avatarUrl.value = "";
         }
     };
 

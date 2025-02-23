@@ -114,7 +114,7 @@ public class UserService {
 
     public void modifyAvatar(Long userUid, String avatarUrl, String avatarHash) {
         Long originAvatarUid = userMapper.selectAvatarUid(userUid);
-        if(originAvatarUid != null) {
+        if(originAvatarUid != null && !originAvatarUid.equals(1885248114797973504L)) {
             imageMapper.deleteImage(originAvatarUid);
         }
 

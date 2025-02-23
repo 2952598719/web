@@ -8,7 +8,14 @@
         </el-input>
     </div>
 
-    <ArticleList :type="'home'"/>
+    <div class="tabs-container">
+        <el-tabs v-model="activeTab" @tab-change="handleTabChange">
+            <el-tab-pane label="推荐" name="home"></el-tab-pane>
+            <el-tab-pane label="关注" name="master"></el-tab-pane>
+        </el-tabs>
+    </div>
+
+    <ArticleList :type="activeTab"/>
 
     <el-button v-if="userStoreObject.isLogin" class="fixed-button" type="primary" title="plus"
         @click="gotoArticleWrite()">+</el-button>
@@ -27,6 +34,11 @@ const route = useRoute()
 const router = useRouter()
 
 const searchContent = ref()
+const activeTab = ref('home');
+
+function handleTabChange(tabName: string) {
+    activeTab.value = tabName;
+}
 
 
 const userStoreObject = useUserStore()
@@ -47,6 +59,10 @@ function gotoSearch() {
     padding-top: 20px;
     padding-bottom: 40px;
     text-align: center;
+}
+
+.tabs-container {
+    margin-bottom: 20px; /* 确保 tabs 和搜索框之间有间距 */
 }
 
 .fixed-button {

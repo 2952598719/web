@@ -189,6 +189,7 @@ async function submit() {
     width: 1000px;
     padding-left: 20%;
     /* padding-right: 20%; */
+    padding-bottom: 20px;
     display: flex;
 }
 

@@ -66,6 +66,14 @@ public class ArticleController {
         return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "搜索文章列表成功", result);
     }
 
+    @GetMapping("/articles/master")
+    @SaCheckLogin
+    public SaResult getMasterArticleList(@RequestParam Integer currentPage, @RequestParam Integer pageSize) {
+        Long userUid = StpUtil.getLoginIdAsLong();
+        PageInfo<ArticleBriefVO> result = articleService.searchMasterArticleList(currentPage, pageSize, userUid);
+        return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "搜索关注者文章列表成功", result);
+    }
+
     @GetMapping("/articles/userPage")
     public SaResult getUserArticleList(@RequestParam Integer currentPage, @RequestParam Integer pageSize, @RequestParam String userName) {
         PageInfo<ArticleBriefVO> result = articleService.searchUserArticleList(currentPage, pageSize, userName);

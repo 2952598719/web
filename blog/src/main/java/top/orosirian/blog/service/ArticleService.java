@@ -153,6 +153,14 @@ public class ArticleService {
         return pageInfo;
     }
 
+    public PageInfo<ArticleBriefVO> searchMasterArticleList(Integer currentPage, Integer pageSize, Long userUid) {
+        PageHelper.startPage(currentPage, pageSize);
+        List<ArticleBriefVO> list = articleMapper.selectMasterArticleList(userUid);
+        PageInfo<ArticleBriefVO> pageInfo = new PageInfo<>(list);
+        log.info("获取用户{}关注列表第{}页文章成功", userUid, currentPage);
+        return pageInfo;
+    }
+
     public Integer searchVoteType(Long articleUid, Long userUid) {
         Boolean voteType = voteMapper.checkVote(articleUid, userUid);
         log.info("获取文章{}点赞状态成功", articleUid);
