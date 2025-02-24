@@ -11,15 +11,34 @@
             {{ routeName }}
         </template>
 
-        <template #extra> <!--插槽3：头像下拉框-->
+        <template #extra>
             <el-button class="collect" link @click="gotoCollection">
-                <el-icon :size="30"><Star /></el-icon>
+                <el-icon :size="30">
+                    <Star />
+                </el-icon>
             </el-button>
 
             <el-button class="manage" link @click="gotoManage">
-                <el-icon :size="30"><Document /></el-icon>
+                <el-icon :size="30">
+                    <Document />
+                </el-icon>
             </el-button>
 
+            <el-dropdown @command="handleBackground">
+                <el-button class="picture" link>
+                    <el-icon :size="30">
+                        <Picture />
+                    </el-icon>
+                </el-button>
+                <template #dropdown>
+                    <el-dropdown-menu>
+                        <el-dropdown-item command="Default">Default</el-dropdown-item>
+                        <el-dropdown-item command="Rail">Rail</el-dropdown-item>
+                        <el-dropdown-item command="Sunny">Sunny</el-dropdown-item>
+                        <el-dropdown-item command="Space">Space</el-dropdown-item>
+                    </el-dropdown-menu>
+                </template>
+            </el-dropdown>
 
             <el-button v-if="!userStoreObject.isLogin" @click="dialogVisible = true">登录/注册</el-button>
             <el-dropdown v-else @command="handleDropdown">
@@ -85,7 +104,7 @@ import { useUserStore } from '@/utils/stores';
 import { loginApi, logoutApi, registerApi } from '@/apis/apiUser';
 import { removeToken, setToken } from '@/utils/funcs';
 import { ElMessage } from 'element-plus';
-import { House, ArrowLeft, Star, Document } from '@element-plus/icons-vue';
+import { House, ArrowLeft, Star, Document, Picture } from '@element-plus/icons-vue';
 import type { LoginForm, RegisterForm } from '@/utils/infs';
 
 const userStoreObject = useUserStore()
@@ -137,9 +156,9 @@ function dialogClose() {
 }
 
 async function handleDropdown(command: string | number | object) {
-    if(command === "gotoCenter") {
+    if (command === "gotoCenter") {
         gotoCenter()
-    } else if(command === "logout") {
+    } else if (command === "logout") {
         try {
             await logoutApi()
             removeToken()
@@ -151,6 +170,11 @@ async function handleDropdown(command: string | number | object) {
             ElMessage.success("登出失败")
         }
     }
+}
+
+async function handleBackground(type: string | number | object) {
+    userStoreObject.saveBackground(type as string)
+    userStoreObject.loadBackground()
 }
 
 async function submitLogin(loginForm: LoginForm) {
@@ -178,7 +202,7 @@ async function submitLogin(loginForm: LoginForm) {
     }
 }
 
-async function submitRegister (registerForm: RegisterForm) {
+async function submitRegister(registerForm: RegisterForm) {
     try {
         const response = await registerApi(registerForm)
         if (response.code === 99999) {
@@ -227,7 +251,7 @@ const registerRules = ref({    // 登录无需验证
 
 .el-divider {
     margin-top: 10px;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
 }
 
 .el-dropdown-link:focus-visible {
@@ -244,4 +268,8 @@ const registerRules = ref({    // 登录无需验证
     margin-top: 5px;
 }
 
+.picture {
+    margin-right: 20px;
+    margin-top: 5px;
+}
 </style>

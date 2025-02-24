@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { getToken, setToken } from './funcs';
+import { getToken, setToken, getBackground, setBackground } from './funcs';
 import { checkLoginApi } from '@/apis/apiUser';
 
 async function processUserBasicInfo(): Promise<{ userName: string; avatarUrl: string } | null> {
@@ -31,9 +31,21 @@ export const useUserStore = defineStore('auth', () => {
     // State
     const userName = ref<string | null>(null);
     const avatarUrl = ref<string | null>(null);
+    const background = ref<string | null>(null);
 
     // Getter（计算属性）
     const isLogin = ref(false);
+
+    const backgroundOptions = [
+        { label: 'Default', url: '' },
+        { label: 'Rail', url: 'https://s2.loli.net/2025/02/24/z5QBjPo6LZiWxrv.jpg' },
+        { label: 'Sunny', url: 'https://s2.loli.net/2025/02/24/1Nlzr962LwYRSd3.jpg' },
+        { label: 'Space', url: 'https://s2.loli.net/2025/02/24/EeMXsYCbaNRB24r.jpg' },
+    ];
+    const backgroundMap = Object.fromEntries(
+        backgroundOptions.map(option => [option.label, option.url])
+    );
+
     // Actions
     async function update() {
         try {
@@ -59,7 +71,24 @@ export const useUserStore = defineStore('auth', () => {
         isLogin.value = false;
     }
 
+    function loadBackground() {
+        try {
+            const savedBg = getBackground() || '';
+            background.value = savedBg ? backgroundMap[savedBg] : backgroundMap['Default'];
+        } catch (e) {
+            console.error('读取本地存储失败:', e);
+        }
+    };
+    
+    function saveBackground(type: string) {
+        try {
+            setBackground(type);
+        } catch (e) {
+            console.error('保存到本地存储失败:', e);
+        }
+    };
+
     return {
-        userName, avatarUrl, isLogin, update, logout
+        userName, avatarUrl, isLogin, background, update, logout, loadBackground, saveBackground
     };
 });

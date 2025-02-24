@@ -1,6 +1,6 @@
 <template>
     <div class="card-container">
-        <el-card class="card" v-for="article in articles" :key="article.articleUid">
+        <el-card class="card" v-for="article in articles" :key="article.articleUid" :lock-scroll="false">
             <div class="header">
                 <div class="left">
                     <h2>
@@ -190,6 +190,7 @@ async function deleteArticle(articleUid: string) {
     /* width: 80%; */
     /* max-width: 800px; */
     border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.8);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     transition: box-shadow 0.3s ease;
 }
@@ -241,7 +242,7 @@ async function deleteArticle(articleUid: string) {
 .author {
     display: flex;
     flex-direction: column;
-    align-items: end;
+    align-items: center;
     cursor: pointer;
     color: #333;
     font-size: 14px;

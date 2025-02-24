@@ -15,15 +15,16 @@
         </el-tabs>
     </div>
 
-    <ArticleList :type="activeTab"/>
+    <ArticleList :type="activeTab" />
 
     <el-button v-if="userStoreObject.isLogin" class="fixed-button" type="primary" title="plus"
         @click="gotoArticleWrite()">+</el-button>
+
 </template>
 
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
 import { UserFilled, Search } from '@element-plus/icons-vue';
 
@@ -35,13 +36,12 @@ const router = useRouter()
 
 const searchContent = ref()
 const activeTab = ref('home');
+const userStoreObject = useUserStore()
 
 function handleTabChange(tabName: string) {
     activeTab.value = tabName;
 }
 
-
-const userStoreObject = useUserStore()
 function gotoArticleWrite() {
     router.push("/write")
 }
@@ -54,15 +54,16 @@ function gotoSearch() {
 
 
 <style scoped>
-
 .search {
     padding-top: 20px;
-    padding-bottom: 40px;
+    /* padding-bottom: 20px; */
     text-align: center;
 }
 
 .tabs-container {
-    margin-bottom: 20px; /* 确保 tabs 和搜索框之间有间距 */
+    margin-left: 20px;
+    margin-bottom: 20px;
+    /* 确保 tabs 和搜索框之间有间距 */
 }
 
 .fixed-button {

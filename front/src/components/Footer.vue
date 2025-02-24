@@ -27,7 +27,7 @@ const recordNumber = ref('闽ICP备2024060507');
 
 <style scoped>
 .footer {
-	margin-top: 100px;
+	/* margin-top: 100px; */
 	padding-top: 50px;
 	padding-bottom: 50px;
 	background-color: #333;	/* 背景颜色 */ 

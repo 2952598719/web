@@ -275,6 +275,7 @@ async function handleCollection() {
     border: 1px solid rgba(0, 0, 0, 0.2); /* 添加边框，1px 宽度，黑色 */
     border-radius: 10px; /* 添加圆角，10px 的圆角半径 */
     padding: 30px; /* 可选：添加内边距，使内容与边框之间有一定的距离 */
+    background-color: white;
 }
 
 .author-container {
