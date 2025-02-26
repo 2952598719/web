@@ -26,6 +26,11 @@ public enum ResultCodeEnum {
     COLLECTION_NOT_BELONG_USER(60002, "收藏夹不属于该用户"),
     COLLECTION_EXIST_ARTICLE(60003, "收藏夹中已存在该文章"),
     COLLECTION_NOT_EXIST_ARTICLE(60004, "收藏夹中不存在该文章"),
+    // 7xxxx 其他相关
+    EMAIL_NOT_EXIST(70001, "邮箱不存在"),
+    EMAIL_SEND_FAIL(70002, "邮件发送失败"),
+    CODE_EXPIRED(70003, "验证码已过期"),
+    CODE_WRONG(70004, "验证码错误"),
     ;
     
 

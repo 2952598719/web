@@ -69,4 +69,10 @@ sa-token:
     is-log: false         # 是否输出操作日志 
     token-prefix: Bearer  # 前缀
 
-
+tengxun:
+  secretId: "AKIDa2Jn7II7kApMjvuhZMyRagebXJG9vXzK"
+  secretKey: "BAzd5MTPwKYeZLxVu78wYyDG7nHZfZfc"
+  httpProfile: "ses.tencentcloudapi.com"
+  sesClient: "ap-guangzhou"
+  fromEmailAddress : "orosirian <orosirian@orosirian.top>"
+  templateID : 30614

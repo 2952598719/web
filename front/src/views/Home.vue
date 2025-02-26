@@ -8,7 +8,7 @@
         </el-input>
     </div>
 
-    <div class="tabs-container">
+    <div class="tabs-container" v-if="userStoreObject.isLogin">
         <el-tabs v-model="activeTab" @tab-change="handleTabChange">
             <el-tab-pane label="推荐" name="home"></el-tab-pane>
             <el-tab-pane label="关注" name="master"></el-tab-pane>

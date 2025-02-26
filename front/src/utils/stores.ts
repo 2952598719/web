@@ -38,8 +38,9 @@ export const useUserStore = defineStore('auth', () => {
 
     const backgroundOptions = [
         { label: 'Default', url: '' },
-        { label: 'Rail', url: 'https://s2.loli.net/2025/02/24/z5QBjPo6LZiWxrv.jpg' },
+        { label: 'Sea', url: 'https://s2.loli.net/2025/02/24/z5QBjPo6LZiWxrv.jpg' },
         { label: 'Sunny', url: 'https://s2.loli.net/2025/02/24/1Nlzr962LwYRSd3.jpg' },
+        { label: 'Mount', url: 'https://s2.loli.net/2025/02/25/YnaIE7ky4QHfVFX.png' },
         { label: 'Space', url: 'https://s2.loli.net/2025/02/24/EeMXsYCbaNRB24r.jpg' },
     ];
     const backgroundMap = Object.fromEntries(

@@ -3,10 +3,16 @@
 export interface LoginForm {
     userName: string;
     passWord: string;
+    emailAddress: string;
+    code: string;
 }
 
 export interface RegisterForm extends LoginForm{
     nickName: string;
+}
+
+export interface EmailForm {
+    emailAddress: string;
 }
 
 export interface ArticleForm {

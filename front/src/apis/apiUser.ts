@@ -1,4 +1,4 @@
-import type { LoginForm, PassWordForm, RegisterForm, UserInfoForm } from "@/utils/infs";
+import type { EmailForm, LoginForm, PassWordForm, RegisterForm, UserInfoForm } from "@/utils/infs";
 import { vanillaRequest, tokenRequest } from "./requests"
 
 export async function registerApi(form: RegisterForm) {
@@ -26,6 +26,25 @@ export async function loginApi(form: LoginForm) {
         method: 'POST',
         url: '/user/login',
         data: form,
+    })
+    return response.data
+}
+
+export async function emailLoginApi(form: LoginForm) {
+    const response = await vanillaRequest({
+        method: 'POST',
+        url: '/user/emaillogin',
+        data: form,
+    })
+    return response.data
+}
+
+export async function sendCodeApi(emailForm: EmailForm) {
+    console.log(emailForm)
+    const response = await vanillaRequest({
+        method: 'POST',
+        url: '/user/sendcode',
+        data: emailForm,
     })
     return response.data
 }

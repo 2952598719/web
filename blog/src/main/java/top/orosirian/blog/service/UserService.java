@@ -1,15 +1,25 @@
 package top.orosirian.blog.service;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.tencentcloudapi.common.Credential;
+import com.tencentcloudapi.common.exception.TencentCloudSDKException;
+import com.tencentcloudapi.common.profile.ClientProfile;
+import com.tencentcloudapi.common.profile.HttpProfile;
+import com.tencentcloudapi.ses.v20201002.SesClient;
+import com.tencentcloudapi.ses.v20201002.models.SendEmailRequest;
+import com.tencentcloudapi.ses.v20201002.models.Template;
 
 import cn.dev33.satoken.secure.BCrypt;
 import cn.hutool.core.lang.Snowflake;
+import cn.hutool.core.util.RandomUtil;
 import lombok.extern.slf4j.Slf4j;
 import top.orosirian.blog.entity.param.ModifyInfoParam;
 import top.orosirian.blog.entity.vo.UserBriefVO;
@@ -18,6 +28,7 @@ import top.orosirian.blog.mapper.FollowMapper;
 import top.orosirian.blog.mapper.ImageMapper;
 import top.orosirian.blog.mapper.UserMapper;
 import top.orosirian.blog.utils.ResultCodeEnum;
+import top.orosirian.blog.utils.config.TencentCloudConfig;
 import top.orosirian.blog.utils.exception.BusinessException;
 
 import top.orosirian.blog.utils.RandomGenerator;
@@ -26,8 +37,16 @@ import top.orosirian.blog.utils.RandomGenerator;
 @Slf4j
 public class UserService {
 
+    private final String CODE_KEY_PREFIX = "login:code:";
+
     @Autowired
     private Snowflake snowflake;    // 想使用Snowflake和SaToken要加config文件
+
+    @Autowired
+    private  TencentCloudConfig emailConfig;
+
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
 
     @Autowired
     private UserMapper userMapper;
@@ -69,6 +88,67 @@ public class UserService {
         }
         log.info("用户{}登陆成功", userUid);
         return userUid;
+    }
+
+    public Long emaillogin(String emailAddress, String code) {
+        // 获取验证码
+        String storedCode = redisTemplate.opsForValue().get(CODE_KEY_PREFIX + emailAddress);
+        if (storedCode == null) {
+            throw new BusinessException(ResultCodeEnum.CODE_EXPIRED, "验证码已过期");
+        }
+        if (!storedCode.equals(code)) {
+            throw new BusinessException(ResultCodeEnum.CODE_WRONG, "验证码错误");
+        }
+        // 删除已使用的验证码
+        redisTemplate.delete(CODE_KEY_PREFIX + emailAddress);
+        // 根据邮箱查询用户UID
+        Long userUid = userMapper.selectUserUidFromEmailAddress(emailAddress);
+        if (userUid == null) {
+            throw new BusinessException(ResultCodeEnum.EMAIL_NOT_EXIST, "邮箱未注册");
+        }
+        log.info("用户{}通过邮箱登录成功", userUid);
+        return userUid;
+    }
+
+    public int sendcode(String emailAddress) {
+        try {
+            boolean isEmailExists = userMapper.emailExists(emailAddress);
+            if(!isEmailExists) {
+                log.info("邮箱{}不存在", emailAddress);
+                return 2;   // 邮箱不存在
+            }
+
+            // 1. 生成6位随机验证码
+            String code = RandomUtil.randomNumbers(6);
+            // 2. 保存到Redis（15分钟有效期）
+            redisTemplate.opsForValue().set(CODE_KEY_PREFIX + emailAddress, code, 15, TimeUnit.MINUTES);
+            // 3. 发送邮件
+            Credential cred = new Credential(emailConfig.getSecretId(), emailConfig.getSecretKey());
+            HttpProfile httpProfile = new HttpProfile();
+            httpProfile.setEndpoint(emailConfig.getHttpProfile());
+            ClientProfile clientProfile = new ClientProfile();
+            clientProfile.setHttpProfile(httpProfile);
+            SesClient client = new SesClient(cred, emailConfig.getSesClient(), clientProfile);
+
+            SendEmailRequest req = new SendEmailRequest();
+            req.setFromEmailAddress(emailConfig.getFromEmailAddress());
+
+            req.setSubject("Orosirian登录验证码");
+            String[] destination = {emailAddress};
+            req.setDestination(destination);
+
+            Template template = new Template();
+            template.setTemplateID(emailConfig.getTemplateID()); // 替换为您的模板ID
+            template.setTemplateData("{\"Verify\":\""+code+"\"}");
+            req.setTemplate(template);
+
+            client.SendEmail(req);
+            log.info("验证码发送成功");
+            return 0;   // 发送成功
+        } catch (TencentCloudSDKException e) {
+            log.error("验证码发送失败: {}", e.getMessage());
+            return 1;   // 发送失败
+        }
     }
 
     public void logout(Long userUid) {

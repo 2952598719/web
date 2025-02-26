@@ -27,7 +27,8 @@ CREATE TABLE t_user(
     create_time DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     update_time DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY(user_uid),
-    UNIQUE INDEX user_name_unique_index(user_name)
+    UNIQUE INDEX user_name_unique_index(user_name),
+    UNIQUE INDEX email_address_unique_index(email_address)
 ) COMMENT '用户表';
 INSERT INTO t_user(user_uid, user_name, pass_word, nick_name) 
     VALUES(1871217981827657728, 'orosirian', '$2a$10$JHEBKfQF3NNmMU5LSMtOb.by0Y7AU7kuAU6aA1gxJmpSXMoeMiQdC', "用户");  -- 密码aa111111

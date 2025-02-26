@@ -43,7 +43,7 @@ userStoreObject.loadBackground()
     height: 110%;
     /* 继承父容器高度 */
     z-index: -1;
-    opacity: 0.2;
+    opacity: 0.6;
     background-size: cover;
 }
 

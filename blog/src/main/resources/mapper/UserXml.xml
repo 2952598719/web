@@ -72,6 +72,12 @@
         WHERE user_name = #{userName} AND user_status = 0
     </select>
 
+    <select id="selectUserUidFromEmailAddress">
+        SELECT user_uid
+        FROM t_user
+        WHERE email_address = #{emailAddress} AND user_status = 0
+    </select>
+
     <select id="selectUserNameFromUserUid">
         SELECT user_name
         FROM t_user
@@ -94,6 +100,12 @@
         SELECT u.user_name, u.nick_name, u.gender, u.biography, u.birthday, u.phone_number, u.email_address, i.image_url, i.image_hash
         FROM t_user as u LEFT JOIN t_image as i ON u.avatar_uid = i.image_uid
         WHERE user_uid = #{userUid}
+    </select>
+
+    <select id="emailExists">
+        SELECT COUNT(*) &gt; 0
+        FROM t_user
+        WHERE email_address = #{emailAddress} AND user_status = 0
     </select>
 
     <select id="isUserNameExists">

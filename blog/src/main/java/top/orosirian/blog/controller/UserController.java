@@ -18,6 +18,8 @@ import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import jakarta.validation.Valid;
+import top.orosirian.blog.entity.param.EmailCodeParam;
+import top.orosirian.blog.entity.param.EmailLoginParam;
 import top.orosirian.blog.entity.param.LoginParam;
 import top.orosirian.blog.entity.param.ModifyInfoParam;
 import top.orosirian.blog.entity.param.ModifyPassWordParam;
@@ -59,6 +61,28 @@ public class UserController {
         StpUtil.login(userUid);
         SaTokenInfo tokenInfo = StpUtil.getTokenInfo();
         return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "登陆成功", tokenInfo);
+    }
+
+    @PostMapping("/user/emaillogin")
+    public SaResult emaillogin(@RequestBody @Valid EmailLoginParam emailLoginParam) {
+        Long userUid = userService.emaillogin(emailLoginParam.getEmailAddress(), emailLoginParam.getCode());
+        StpUtil.login(userUid);
+        SaTokenInfo tokenInfo = StpUtil.getTokenInfo();
+        return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "登陆成功", tokenInfo);
+    }
+
+    @PostMapping("/user/sendcode")
+    public SaResult sendcode(@RequestBody @Valid EmailCodeParam emailCodeParam) {
+        int code = userService.sendcode(emailCodeParam.getEmailAddress());
+        if(code == 0) {
+            return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "验证码发送成功", null);
+        } else if(code == 1) {
+            return new SaResult(ResultCodeEnum.EMAIL_SEND_FAIL.getCode(), "验证码发送失败", null);
+        } else if(code == 2) {
+            return new SaResult(ResultCodeEnum.EMAIL_NOT_EXIST.getCode(), "邮箱不存在", null);
+        } else {
+            return new SaResult(ResultCodeEnum.UNKNOWN.getCode(), "未知错误", null);
+        }
     }
     
     @PostMapping("/user/logout")
