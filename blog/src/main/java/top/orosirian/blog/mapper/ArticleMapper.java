@@ -14,7 +14,7 @@ public interface ArticleMapper {
 
     void updateArticle(Long articleUid, String title,  String articleContent);
 
-    void updateViewCount(Long articleUid);
+    void updateViewCount(Long articleUid, Long increment);
 
     void deleteArticle(Long articleUid);
 
@@ -31,6 +31,8 @@ public interface ArticleMapper {
     List<ArticleBriefVO> selectCollectionArticleList(Long collectionUid);
     
     List<ArticleBriefVO> selectMasterArticleList(Long userUid);
+
+    String selectArticleTitle(Long articleUid);
 
     Long selectAuthorUid(Long articleUid);
 

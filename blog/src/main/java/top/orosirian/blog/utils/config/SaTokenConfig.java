@@ -19,7 +19,9 @@ public class SaTokenConfig implements WebMvcConfigurer {
 
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
-		registry.addInterceptor(new SaInterceptor()).addPathPatterns("/**"); // 注册 Sa-Token 拦截器，打开注解式鉴权功能
+		registry.addInterceptor(new SaInterceptor())
+				.addPathPatterns("/**") // 注册 Sa-Token 拦截器，打开注解式鉴权功能
+				.excludePathPatterns("/ws/notifications/**");
 	}
 
 	@Bean
@@ -27,7 +29,8 @@ public class SaTokenConfig implements WebMvcConfigurer {
 		return new SaServletFilter()
 
 				// 指定 [拦截路由] 与 [放行路由]
-				.addInclude("/**").addExclude("/favicon.ico")
+				.addInclude("/**")
+				.addExclude("/favicon.ico")
 
 				// 认证函数: 每次请求执行
 				.setAuth(obj -> {
@@ -47,7 +50,7 @@ public class SaTokenConfig implements WebMvcConfigurer {
 
 							// ---------- 设置跨域响应头 ----------
 							// 允许指定域访问跨域资源"http://47.121.178.97"
-							// .setHeader("Access-Control-Allow-Origin", "http://orosirian.top")
+							// .setHeader("Access-Control-Allow-Origin", "http://www.orosirian.top")
 							.setHeader("Access-Control-Allow-Origin", "http://localhost:5173")
 							// .setHeader("Access-Control-Allow-Origin", "*")
 							// 允许所有请求方式

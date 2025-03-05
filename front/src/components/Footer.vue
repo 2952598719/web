@@ -4,8 +4,8 @@
 			<div class="contact">
 				<p>联系方式：{{ phone }}</p>
 				<p>邮箱：{{ email }}</p>
-				<p>Github：<a :href="githubUrl" target="_blank">{{ username }}</a></p>
-				<p>Gitee：<a :href="giteeUrl" target="_blank">{{ username }}</a></p>
+				<!-- <p>Github：<a :href="githubUrl" target="_blank">{{ username }}</a></p> -->
+				<!-- <p>Gitee：<a :href="giteeUrl" target="_blank">{{ username }}</a></p> -->
 			</div>
 			<div class="record">
 				<p>备案号：{{ recordNumber }}</p>

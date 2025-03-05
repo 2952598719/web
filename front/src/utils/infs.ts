@@ -79,3 +79,13 @@ export interface Collection {
     collectionUid: string;
     collectionName: string;
 }
+
+export interface NoticeVO {
+    noticeUid: string
+    triggerName: string;
+    subjectUid: string;
+    noticeType: number;
+    articleUid: string;
+    updateTime: string;
+    subjectContent: string;
+}

@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import top.orosirian.blog.entity.vo.CommentVO;
 import top.orosirian.blog.mapper.ArticleMapper;
 import top.orosirian.blog.mapper.CommentMapper;
+import top.orosirian.blog.mapper.NoticeMapper;
 import top.orosirian.blog.utils.ResultCodeEnum;
 import top.orosirian.blog.utils.exception.BusinessException;
 
@@ -28,6 +29,9 @@ public class CommentService {
 
     @Autowired
     private CommentMapper commentMapper;
+
+    @Autowired
+    private NoticeMapper noticeMapper;
 
     public void addComment(Long userUid, Long articleUid, Long replyUid, String commentContent) {
         boolean isArticleExists = articleMapper.isArticleExist(articleUid);
@@ -47,6 +51,14 @@ public class CommentService {
         
         Long commentUid = snowflake.nextId();
         commentMapper.insertComment(commentUid, userUid, articleUid, replyUid, commentContent);
+
+        if(replyUid == 0) {     // 对文章的评论
+            Long authorUid = articleMapper.selectAuthorUid(articleUid);
+            noticeMapper.insertNotice(snowflake.nextId(), authorUid, userUid, commentUid, 3, articleUid);
+        } else {                // 对评论的评论
+            Long authorUid = commentMapper.selectAuthorUid(replyUid);
+            noticeMapper.insertNotice(snowflake.nextId(), authorUid, userUid, commentUid, 4, articleUid);
+        }
         log.info("用户{}发表评论{}成功", userUid, commentUid);
     }
 

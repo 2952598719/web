@@ -31,6 +31,7 @@ public enum ResultCodeEnum {
     EMAIL_SEND_FAIL(70002, "邮件发送失败"),
     CODE_EXPIRED(70003, "验证码已过期"),
     CODE_WRONG(70004, "验证码错误"),
+    CODE_RETRY_LIMIT(70005, "验证码错误次数过多"),
     ;
     
 

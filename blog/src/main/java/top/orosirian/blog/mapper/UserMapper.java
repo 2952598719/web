@@ -41,6 +41,8 @@ public interface UserMapper {
 
     String selectUserNameFromUserUid(@Param("userUid") Long userUid);
 
+    String selectNickNameFromUserUid(@Param("userUid") Long userUid);
+
     Long selectAvatarUid(@Param("userUid") Long userUid);
 
     UserBriefVO selectUserBasic(@Param("userUid") Long userUid);
@@ -50,7 +52,5 @@ public interface UserMapper {
     boolean emailExists(@Param("emailAddress") String emailAddress);
 
     boolean isUserNameExists(@Param("userName") String userName);
-
-
 
 }

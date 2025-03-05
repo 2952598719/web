@@ -195,5 +195,15 @@ export async function getFanListApi(userName: string, currentPage: number, pageS
 
 }
 
-
+export async function getNoticeListApi(currentPage: number, pageSize: number) {
+    const response = await tokenRequest({
+        method: 'GET',
+        url: '/user/notice',
+        params: {
+            currentPage: currentPage,
+            pageSize: pageSize,
+        },
+    })
+    return response.data
+}
 

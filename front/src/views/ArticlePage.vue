@@ -48,7 +48,7 @@
 
     <CommentList />
 
-    <el-dialog v-model="showCollectDialog" :lock-scroll="false" :title="'收藏'" @close="showCollectDialog = false" >
+    <el-dialog v-model="showCollectDialog" :lock-scroll="false" :title="'收藏'" @close="showCollectDialog = false">
         <el-checkbox v-for="collection in collectionList" v-model="collection.selected" border>
             {{ collection.collectionName }}
         </el-checkbox>
@@ -140,16 +140,16 @@ async function renderMarkdown() {
         const response = ref()
         response.value = await getArticleApi(articleUid)
         tags.value = (await getArticleTagApi(articleUid)).data.split(", ")
-        if(tags.value.length == 1 && tags.value[0] == "") {
+        if (tags.value.length == 1 && tags.value[0] == "") {
             tags.value = []
         }
         if (response.value.code === 99999) {
             Object.assign(articleData.value, response.value.data);
             Vditor.preview(document.getElementById("preview") as HTMLDivElement,
                 response.value.data.articleContent,
-                { mode: "light", hljs: { style: "github" } }
+                { mode: "light", icon: "ant"  }
             );
-            
+
         } else {
             router.push("/PageNotFound")
             // ElMessage.error("获取文章失败")
@@ -272,47 +272,62 @@ async function handleCollection() {
     margin-right: 25%;
     margin-top: 50px;
     margin-bottom: 25px;
-    border: 1px solid rgba(0, 0, 0, 0.2); /* 添加边框，1px 宽度，黑色 */
-    border-radius: 10px; /* 添加圆角，10px 的圆角半径 */
-    padding: 30px; /* 可选：添加内边距，使内容与边框之间有一定的距离 */
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    /* 添加边框，1px 宽度，黑色 */
+    border-radius: 10px;
+    /* 添加圆角，10px 的圆角半径 */
+    padding: 30px;
+    /* 可选：添加内边距，使内容与边框之间有一定的距离 */
     background-color: white;
 }
 
 .author-container {
-    display: flex; /* 使用 flex 布局 */
-    align-items: center; /* 垂直居中 */
-    justify-content: center; /* 水平居中（可选，根据需求调整） */
-    text-align: left; /* 文本左对齐 */  
+    display: flex;
+    /* 使用 flex 布局 */
+    align-items: center;
+    /* 垂直居中 */
+    justify-content: center;
+    /* 水平居中（可选，根据需求调整） */
+    text-align: left;
+    /* 文本左对齐 */
     margin-top: 20px;
-    gap: 10px; /* 头像和作者名字之间的间距 */
+    gap: 10px;
+    /* 头像和作者名字之间的间距 */
 }
 
 .author {
     cursor: pointer;
-    font-size: 16px; /* 调整字体大小 */
-    margin-left: 10px; /* 如果需要额外的间距 */
+    font-size: 16px;
+    /* 调整字体大小 */
+    margin-left: 10px;
+    /* 如果需要额外的间距 */
 }
 
 .functions {
     display: flex;
-    justify-content: flex-end; /* 让内容在容器内靠右对齐 */
+    justify-content: flex-end;
+    /* 让内容在容器内靠右对齐 */
     user-select: none;
     padding-bottom: 20px;
     margin-bottom: 20px;
     margin-right: 25%;
-    
+
 }
 
 .icon-with-text {
     display: inline-flex;
-    align-items: center; /* 垂直居中对齐图标和文字 */
-    margin-left: 10px; /* 添加一些间距 */
+    align-items: center;
+    /* 垂直居中对齐图标和文字 */
+    margin-left: 10px;
+    /* 添加一些间距 */
     cursor: pointer;
 }
 
 .icon-text {
-    margin-left: 5px; /* 调整数字与图标的距离 */
-    font-size: 12px; /* 调整字体大小 */
+    margin-left: 5px;
+    /* 调整数字与图标的距离 */
+    font-size: 12px;
+    /* 调整字体大小 */
 }
 
 .view-count {
@@ -327,4 +342,16 @@ async function handleCollection() {
     margin-right: 25%;
 }
 
+.mid-button {
+    text-align: center;
+    padding-top: 10px;
+}
+
+a {
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
 </style>

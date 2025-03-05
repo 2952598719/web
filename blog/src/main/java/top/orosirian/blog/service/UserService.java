@@ -3,59 +3,67 @@ package top.orosirian.blog.service;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.amqp.core.MessageDeliveryMode;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.tencentcloudapi.common.Credential;
-import com.tencentcloudapi.common.exception.TencentCloudSDKException;
-import com.tencentcloudapi.common.profile.ClientProfile;
-import com.tencentcloudapi.common.profile.HttpProfile;
-import com.tencentcloudapi.ses.v20201002.SesClient;
-import com.tencentcloudapi.ses.v20201002.models.SendEmailRequest;
-import com.tencentcloudapi.ses.v20201002.models.Template;
 
 import cn.dev33.satoken.secure.BCrypt;
 import cn.hutool.core.lang.Snowflake;
 import cn.hutool.core.util.RandomUtil;
 import lombok.extern.slf4j.Slf4j;
 import top.orosirian.blog.entity.param.ModifyInfoParam;
+import top.orosirian.blog.entity.vo.NoticeVO;
 import top.orosirian.blog.entity.vo.UserBriefVO;
 import top.orosirian.blog.entity.vo.UserDetailVO;
+import top.orosirian.blog.mapper.ArticleMapper;
+import top.orosirian.blog.mapper.CommentMapper;
 import top.orosirian.blog.mapper.FollowMapper;
 import top.orosirian.blog.mapper.ImageMapper;
+import top.orosirian.blog.mapper.NoticeMapper;
 import top.orosirian.blog.mapper.UserMapper;
 import top.orosirian.blog.utils.ResultCodeEnum;
-import top.orosirian.blog.utils.config.TencentCloudConfig;
 import top.orosirian.blog.utils.exception.BusinessException;
-
-import top.orosirian.blog.utils.RandomGenerator;
+import top.orosirian.blog.utils.mq.EmailTask;
 
 @Service
 @Slf4j
 public class UserService {
 
-    private final String CODE_KEY_PREFIX = "login:code:";
+    private final Integer MAX_RETRY_COUNT = 5;
+    private final String CODE_KEY_PREFIX = "captcha:code:";
+    private final String CODE_ERROR_PREFIX = "captcha:error:";
 
     @Autowired
     private Snowflake snowflake;    // 想使用Snowflake和SaToken要加config文件
 
     @Autowired
-    private  TencentCloudConfig emailConfig;
+    private StringRedisTemplate stringRedisTemplate;
 
     @Autowired
-    private RedisTemplate<String, String> redisTemplate;
+    private RabbitTemplate rabbitTemplate;
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private ArticleMapper articleMapper;
+
+    @Autowired
+    private CommentMapper commentMapper;
 
     @Autowired
     private ImageMapper imageMapper;
 
     @Autowired
     private FollowMapper followMapper;
+
+    @Autowired
+    private NoticeMapper noticeMapper;
 
     /**
      * 注册登录
@@ -73,7 +81,7 @@ public class UserService {
     }
 
     public void unregister(Long userUid) {
-        String newUserName = RandomGenerator.generateSimpleRandomString(20);
+        String newUserName = RandomUtil.randomString(20);
         userMapper.deleteUser(userUid, newUserName, "已注销用户");
         log.info("用户{}注销成功", userUid);
     }
@@ -91,64 +99,60 @@ public class UserService {
     }
 
     public Long emaillogin(String emailAddress, String code) {
-        // 获取验证码
-        String storedCode = redisTemplate.opsForValue().get(CODE_KEY_PREFIX + emailAddress);
-        if (storedCode == null) {
-            throw new BusinessException(ResultCodeEnum.CODE_EXPIRED, "验证码已过期");
-        }
-        if (!storedCode.equals(code)) {
-            throw new BusinessException(ResultCodeEnum.CODE_WRONG, "验证码错误");
-        }
-        // 删除已使用的验证码
-        redisTemplate.delete(CODE_KEY_PREFIX + emailAddress);
         // 根据邮箱查询用户UID
         Long userUid = userMapper.selectUserUidFromEmailAddress(emailAddress);
         if (userUid == null) {
             throw new BusinessException(ResultCodeEnum.EMAIL_NOT_EXIST, "邮箱未注册");
         }
+
+        // 查看输入错误次数是否超限
+        String codeKey = CODE_KEY_PREFIX + emailAddress;
+        String errorKey = CODE_ERROR_PREFIX + emailAddress;
+        Long errorCount = stringRedisTemplate.opsForValue().increment(errorKey);
+        if (errorCount != null && errorCount >= MAX_RETRY_COUNT) {
+            stringRedisTemplate.delete(codeKey);
+            stringRedisTemplate.delete(errorKey);
+            throw new BusinessException(ResultCodeEnum.CODE_RETRY_LIMIT, "错误次数超限");
+        }
+
+        // 获取验证码
+        String storedCode = stringRedisTemplate.opsForValue().get(CODE_KEY_PREFIX + emailAddress);
+        if (storedCode == null) {
+            throw new BusinessException(ResultCodeEnum.CODE_EXPIRED, "验证码已过期");
+        }
+        if (!storedCode.equals(code)) {
+            stringRedisTemplate.opsForValue().increment(errorKey);  // 自动从字符串到数字
+            throw new BusinessException(ResultCodeEnum.CODE_WRONG, "验证码错误");
+        }
+        // 删除已使用的验证码
+        stringRedisTemplate.delete(CODE_KEY_PREFIX + emailAddress);
+        
         log.info("用户{}通过邮箱登录成功", userUid);
         return userUid;
     }
 
-    public int sendcode(String emailAddress) {
-        try {
-            boolean isEmailExists = userMapper.emailExists(emailAddress);
-            if(!isEmailExists) {
-                log.info("邮箱{}不存在", emailAddress);
-                return 2;   // 邮箱不存在
-            }
-
-            // 1. 生成6位随机验证码
-            String code = RandomUtil.randomNumbers(6);
-            // 2. 保存到Redis（15分钟有效期）
-            redisTemplate.opsForValue().set(CODE_KEY_PREFIX + emailAddress, code, 15, TimeUnit.MINUTES);
-            // 3. 发送邮件
-            Credential cred = new Credential(emailConfig.getSecretId(), emailConfig.getSecretKey());
-            HttpProfile httpProfile = new HttpProfile();
-            httpProfile.setEndpoint(emailConfig.getHttpProfile());
-            ClientProfile clientProfile = new ClientProfile();
-            clientProfile.setHttpProfile(httpProfile);
-            SesClient client = new SesClient(cred, emailConfig.getSesClient(), clientProfile);
-
-            SendEmailRequest req = new SendEmailRequest();
-            req.setFromEmailAddress(emailConfig.getFromEmailAddress());
-
-            req.setSubject("Orosirian登录验证码");
-            String[] destination = {emailAddress};
-            req.setDestination(destination);
-
-            Template template = new Template();
-            template.setTemplateID(emailConfig.getTemplateID()); // 替换为您的模板ID
-            template.setTemplateData("{\"Verify\":\""+code+"\"}");
-            req.setTemplate(template);
-
-            client.SendEmail(req);
-            log.info("验证码发送成功");
-            return 0;   // 发送成功
-        } catch (TencentCloudSDKException e) {
-            log.error("验证码发送失败: {}", e.getMessage());
-            return 1;   // 发送失败
+    public void sendcode(String emailAddress) {
+        boolean isEmailExists = userMapper.emailExists(emailAddress);
+        if(!isEmailExists) {
+            log.info("邮箱{}不存在", emailAddress);
+            throw new BusinessException(ResultCodeEnum.EMAIL_NOT_EXIST, "邮箱未注册");
         }
+
+        // 1. 生成6位随机验证码
+        String code = RandomUtil.randomNumbers(6);
+        // 2. 保存到Redis（15分钟有效期）
+        stringRedisTemplate.opsForValue().set(CODE_KEY_PREFIX + emailAddress, code, 15, TimeUnit.MINUTES);
+        // 3. 发送邮件
+        rabbitTemplate.convertAndSend(
+            "email.direct",
+            "email.verify",
+            new EmailTask(emailAddress, code),
+            message -> {    // 关键：设置消息持久化
+                message.getMessageProperties().setDeliveryMode(MessageDeliveryMode.PERSISTENT);
+                return message;
+            }
+        );
+        log.info("邮件任务提交成功");
     }
 
     public void logout(Long userUid) {
@@ -216,6 +220,13 @@ public class UserService {
         if(masterUid == fanUid) throw new BusinessException(ResultCodeEnum.USER_FOLLOW_CONFLICT);
 
         followMapper.insertFollow(masterUid, fanUid);
+
+        Long noticeUid = noticeMapper.selectNoticeUidByFollow(masterUid, fanUid);
+        if(noticeUid == null) {
+            noticeMapper.insertNoticeFollow(snowflake.nextId(), masterUid, fanUid, 0);
+        } else {
+            noticeMapper.updateNotice(noticeUid, 0);
+        }
         log.info("{}关注{}成功", fanUid, masterUid);
     }
 
@@ -266,6 +277,22 @@ public class UserService {
         log.info("获取用户{}的第{}页粉丝列表成功", userUid, currentPage);
         return pageInfo;
     }
-
     
+    public PageInfo<NoticeVO> searchNoticeList(Integer currentPage, Integer pageSize, Long userUid) {
+        PageHelper.startPage(currentPage, pageSize);
+        List<NoticeVO> noticeList = noticeMapper.selectNoticeList(userUid);
+        for(NoticeVO noticeVO : noticeList) {
+            String content = "";
+            if(noticeVO.getNoticeType() == 1 || noticeVO.getNoticeType() == 3) {
+                content = articleMapper.selectArticleTitle(Long.valueOf(noticeVO.getArticleUid()));
+            } else if(noticeVO.getNoticeType() == 2 || noticeVO.getNoticeType() == 4) {
+                content = commentMapper.selectCommentContentPart(Long.valueOf(noticeVO.getSubjectUid()));
+            }
+            noticeVO.setSubjectContent(content);
+        }
+
+        PageInfo<NoticeVO> pageInfo = new PageInfo<>(noticeList);
+        log.info("获取用户{}的第{}页通知列表成功", userUid, currentPage);
+        return pageInfo;
+    }
 }

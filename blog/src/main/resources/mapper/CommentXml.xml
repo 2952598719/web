@@ -15,6 +15,13 @@
         <result property="createTime" column="create_time" />
     </resultMap>
 
+    <resultMap id="noticeMap" type="top.orosirian.blog.entity.vo.NoticeVO">
+        <result property="subjectType" column="subject_type" />
+        <result property="subjectUid" column="subject_uid" />
+        <result property="actionType" column="action_type" />
+        <result property="userName" column="user_name" />
+    </resultMap>
+
     <insert id="insertComment">
         INSERT INTO t_comment(comment_uid, user_uid, article_uid, reply_uid, comment_content)
         VALUES (#{commentUid}, #{userUid}, #{articleUid}, #{replyUid}, #{commentContent})
@@ -46,6 +53,18 @@
 
     <select id="selectArticleUid">
         SELECT article_uid
+        FROM t_comment
+        WHERE comment_uid = #{commentUid}
+    </select>
+
+    <select id="selectAuthorUid">
+        SELECT user_uid
+        FROM t_comment
+        WHERE comment_uid = #{commentUid}
+    </select>
+
+    <select id="selectCommentContentPart">
+        SELECT LEFT(comment_content, 30)
         FROM t_comment
         WHERE comment_uid = #{commentUid}
     </select>

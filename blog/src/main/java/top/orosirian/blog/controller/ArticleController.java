@@ -146,9 +146,5 @@ public class ArticleController {
         PageInfo<ArticleBriefVO> result = articleService.searchCollectionArticleList(currentPage, pageSize, Long.parseLong(collectionUid));
         return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "搜索收藏夹文章列表成功", result);
     }
-
-
-
-    
     
 }

@@ -3,9 +3,11 @@ package top.orosirian.blog.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import cn.hutool.core.lang.Snowflake;
 import lombok.extern.slf4j.Slf4j;
 import top.orosirian.blog.mapper.ArticleMapper;
 import top.orosirian.blog.mapper.CommentMapper;
+import top.orosirian.blog.mapper.NoticeMapper;
 import top.orosirian.blog.mapper.VoteMapper;
 import top.orosirian.blog.utils.ResultCodeEnum;
 import top.orosirian.blog.utils.exception.BusinessException;
@@ -13,6 +15,9 @@ import top.orosirian.blog.utils.exception.BusinessException;
 @Service
 @Slf4j
 public class VoteService {
+
+    @Autowired
+    private Snowflake snowflake;
 
     @Autowired
     private VoteMapper voteMapper;
@@ -23,18 +28,39 @@ public class VoteService {
     @Autowired 
     private CommentMapper commentMapper;
 
+    @Autowired
+    private NoticeMapper noticeMapper;
+
 
     public void vote(Long targetUid, Long userUid, boolean voteType) {
         boolean isTargetExist = articleMapper.isArticleExist(targetUid) || commentMapper.isCommentExist(targetUid);
         if(!isTargetExist) {
             throw new BusinessException(ResultCodeEnum.VOTE_TARGET_NOT_EXIST);
         }
-        // boolean isVoted = voteMapper.checkVote(targetUid, userUid, voteType);
-        // if(isVoted) {
-        //     throw new BusinessException(ResultCodeEnum.VOTE_ALREADY_VOTED);
-        // }
 
         voteMapper.vote(targetUid, userUid, voteType);
+
+        if(voteType == true) {
+            Long articleAuthorUid = articleMapper.selectAuthorUid(targetUid);
+            Long commentAuthorUid = commentMapper.selectAuthorUid(targetUid);
+
+            Long noticeUid = noticeMapper.selectNoticeUid(userUid, targetUid);
+
+            if(articleAuthorUid != null) {
+                if(noticeUid != null) {
+                    noticeMapper.updateNotice(noticeUid, 1);
+                } else {
+                    noticeMapper.insertNotice(snowflake.nextId(), articleAuthorUid, userUid, targetUid, 1, targetUid);
+                }
+            } else if(commentAuthorUid != null) {
+                Long articleUid = commentMapper.selectArticleUid(targetUid);
+                if(noticeUid != null) {
+                    noticeMapper.updateNotice(noticeUid, 2);
+                } else {
+                    noticeMapper.insertNotice(snowflake.nextId(), commentAuthorUid, userUid, targetUid, 2, articleUid);
+                }
+            }
+        }
         log.info("用户{}赞踩{}成功", userUid, targetUid);
     }
 

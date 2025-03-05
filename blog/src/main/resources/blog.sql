@@ -135,4 +135,15 @@ CREATE TABLE t_image(
 INSERT INTO t_image(image_uid, image_url, image_hash) 
     VALUES(1885248114797973504, 'https://s2.loli.net/2025/01/31/DwlN42pIBOjUxdg.jpg', 'O7XaKGQtAigekxdvpHYF6nZmJ4'); 
 
-
+DROP TABLE IF EXISTS t_notice;
+CREATE TABLE t_notice (
+    notice_uid      BIGINT PRIMARY KEY                  COMMENT '通知UID',
+    receiver_uid    BIGINT  NOT NULL                    COMMENT '接收用户UID',
+    trigger_uid     BIGINT  NOT NULL                    COMMENT '触发用户UID',
+    subject_uid     BIGINT                              COMMENT '主体uid，notice_type为1~2时为点赞的文章/评论uid，notice_type为3~4时为发表的评论uid',
+    notice_type     INT     NOT NULL                    COMMENT '通知类型: 0/1/2/3/4，关注、点赞文章、点赞评论，评论文章、评论评论',
+    article_uid     BIGINT                              COMMENT '这条点赞/评论所属的文章uid',
+    create_time     DATETIME DEFAULT CURRENT_TIMESTAMP  COMMENT '创建时间',
+    update_time     DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_receiver (receiver_uid, create_time DESC) COMMENT '接收者查询索引'
+) COMMENT '系统通知表';

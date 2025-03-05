@@ -7,6 +7,7 @@ import WriteArticle from '../views/WriteArticle.vue';
 import ArticleListPage from '../views/ArticleListPage.vue';
 import Collection from '../views/Collection.vue';
 import PageNotFound from '../views/PageNotFound.vue';
+import NoticePage from '@/views/NoticePage.vue';
 
 
 const blogRoutes = [
@@ -25,6 +26,11 @@ const blogRoutes = [
 		path: '/user/:userName',
 		name: 'UserPage',
 		component: UserPage,
+	},
+	{
+		path: '/notice',
+		name: 'NoticePage',
+		component: NoticePage
 	},
 	// 文章相关
 	{

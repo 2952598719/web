@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.orosirian.blog.mapper.NoticeMapper">
+
+    <resultMap id="NoticeMap" type="top.orosirian.blog.entity.vo.NoticeVO">
+        <id property="noticeUid" column="notice_uid"/>
+        <result property="triggerName" column="trigger_name"/>
+        <result property="subjectUid" column="subject_uid"/>
+        <result property="noticeType" column="notice_type"/>
+        <result property="articleUid" column="article_uid"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <insert id="insertNoticeFollow">
+        INSERT INTO t_notice(notice_uid, receiver_uid, trigger_uid, notice_type)
+        VALUES (#{noticeUid}, #{receiverUid}, #{triggerUid}, #{noticeType})
+    </insert>
+
+    <insert id="insertNotice">
+        INSERT INTO t_notice(notice_uid, receiver_uid, trigger_uid, subject_uid, notice_type, article_uid)
+        VALUES (#{noticeUid}, #{receiverUid}, #{triggerUid}, #{subjectUid}, #{noticeType}, #{articleUid})
+    </insert>
+
+    <update id="updateNotice">
+        UPDATE t_notice
+        SET notice_type = #{noticeType}
+        WHERE notice_uid = #{noticeUid}
+    </update>
+
+    <select id="selectNoticeList" resultMap="NoticeMap">
+        SELECT n.notice_uid, u.user_name as trigger_name, n.subject_uid, n.notice_type, n.update_time, n.article_uid
+        FROM t_notice AS n LEFT JOIN t_user AS u ON n.trigger_uid = u.user_uid
+        WHERE receiver_uid = #{userUid}
+        ORDER BY update_time DESC
+    </select>
+
+    <select id="selectNoticeUid">
+        SELECT notice_uid
+        FROM t_notice
+        WHERE trigger_uid = #{triggerUid} AND subject_uid = #{subjectUid} AND notice_type IN (1, 2)
+    </select>
+
+    <select id="selectNoticeUidByFollow">
+        SELECT notice_uid
+        FROM t_notice
+        WHERE receiver_uid = #{masterUid} AND trigger_uid = #{fanUid} AND notice_type = 0
+    </select>
+
+</mapper>

@@ -338,4 +338,12 @@ async function handleDislikeComment(comment: CommentForm) {
     margin-left: 25%;
     margin-right: 25%;
 }
+
+.inner-card{
+    margin: 15px;
+}
+
+.commentor{
+    padding-top: 20px;
+}
 </style>

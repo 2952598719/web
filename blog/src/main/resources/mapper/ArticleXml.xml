@@ -43,7 +43,7 @@
 
     <update id="updateViewCount">
         UPDATE t_article
-        SET view_count = view_count + 1
+        SET view_count = view_count + #{increment}
         WHERE article_uid = #{articleUid} AND article_type = 0
     </update>
 
@@ -130,6 +130,12 @@
             LEFT JOIN t_user AS u ON a.user_uid = u.user_uid
             LEFT JOIN t_image AS i ON u.avatar_uid = i.image_uid
         WHERE f.fan_uid = #{userUid} AND a.article_type = 0
+    </select>
+
+    <select id="selectArticleTitle">
+        SELECT title
+        FROM t_article
+        WHERE article_uid = #{articleUid} AND article_type = 0
     </select>
 
     <select id="selectAuthorUid">

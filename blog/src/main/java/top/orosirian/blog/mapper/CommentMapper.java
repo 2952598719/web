@@ -19,6 +19,10 @@ public interface CommentMapper {
 
     Long selectArticleUid(Long commentUid);
 
+    Long selectAuthorUid(Long authorUid);
+
+    String selectCommentContentPart(Long commentUid);
+
     CommentVO selectComment(Long commentUid);
 
     boolean isCommentExist(Long commentUid);

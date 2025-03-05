@@ -24,6 +24,7 @@ import top.orosirian.blog.entity.param.LoginParam;
 import top.orosirian.blog.entity.param.ModifyInfoParam;
 import top.orosirian.blog.entity.param.ModifyPassWordParam;
 import top.orosirian.blog.entity.param.RegisterParam;
+import top.orosirian.blog.entity.vo.NoticeVO;
 import top.orosirian.blog.entity.vo.UserBriefVO;
 import top.orosirian.blog.entity.vo.UserDetailVO;
 import top.orosirian.blog.service.UserService;
@@ -73,16 +74,8 @@ public class UserController {
 
     @PostMapping("/user/sendcode")
     public SaResult sendcode(@RequestBody @Valid EmailCodeParam emailCodeParam) {
-        int code = userService.sendcode(emailCodeParam.getEmailAddress());
-        if(code == 0) {
-            return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "验证码发送成功", null);
-        } else if(code == 1) {
-            return new SaResult(ResultCodeEnum.EMAIL_SEND_FAIL.getCode(), "验证码发送失败", null);
-        } else if(code == 2) {
-            return new SaResult(ResultCodeEnum.EMAIL_NOT_EXIST.getCode(), "邮箱不存在", null);
-        } else {
-            return new SaResult(ResultCodeEnum.UNKNOWN.getCode(), "未知错误", null);
-        }
+        userService.sendcode(emailCodeParam.getEmailAddress());
+        return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "验证码发送请求已受理", null);
     }
     
     @PostMapping("/user/logout")
@@ -178,6 +171,14 @@ public class UserController {
     public SaResult getUserFanList(@RequestParam Integer currentPage, @RequestParam Integer pageSize, @PathVariable String userName) {
         PageInfo<UserBriefVO> fanList = userService.searchFanList(currentPage, pageSize, userName);
         return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "粉丝列表获取成功", fanList);
+    }
+
+
+    @GetMapping("/user/notice")
+    @SaCheckLogin
+    public SaResult getNoticeList(@RequestParam Integer currentPage, @RequestParam Integer pageSize) {
+        PageInfo<NoticeVO> noticeList = userService.searchNoticeList(currentPage, pageSize, StpUtil.getLoginIdAsLong());
+        return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "通知列表获取成功", noticeList);
     }
 
 }

@@ -27,6 +27,8 @@
 		<lombok.version>1.18.36</lombok.version>
 		<tencentcloud-sdk-java.version>3.1.1205</tencentcloud-sdk-java.version>
 		<!--mybatis-plus 3.5.5由于jsqlparser冲突，只能和pagehelper 2.0兼容，3.5.7以上则可以正常与pagehelper 2.1兼容-->
+		<redisson-spring-boot-starter.version>3.45.0</redisson-spring-boot-starter.version>
+		<jackson-datatype-jsr310.version>2.18.3</jackson-datatype-jsr310.version>
 	</properties>
 
 	<dependencies>
@@ -81,6 +83,11 @@
 			<artifactId>commons-pool2</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-redis</artifactId>
+		</dependency>
+
 		<!-- 工具 -->
 
 		<dependency>			<!-- Sa-Token -->
@@ -118,11 +125,34 @@
 			</exclusions>
 		</dependency>
 
-		<dependency>
+		<dependency>			<!-- 腾讯云sdk -->
 			<groupId>com.tencentcloudapi</groupId>
 			<artifactId>tencentcloud-sdk-java</artifactId>
 			<version>${tencentcloud-sdk-java.version}</version>
 		</dependency>
+
+		<dependency>			<!-- RabbitMQ -->
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
+
+		<dependency>
+			<groupId>org.redisson</groupId>
+			<artifactId>redisson-spring-boot-starter</artifactId>
+			<version>${redisson-spring-boot-starter.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-jsr310</artifactId>
+			<version>${jackson-datatype-jsr310.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.lettuce</groupId>
+			<artifactId>lettuce-core</artifactId> <!-- 默认客户端 -->
+		</dependency>
+
 	</dependencies>
 
 	<build>

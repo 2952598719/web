@@ -18,3 +18,4 @@ export function getBackground() {
 export function setBackground(background: string) {
     localStorage.setItem('backgroundPreference', background)
 }
+

@@ -3,11 +3,19 @@ package top.orosirian.blog.service;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 
@@ -49,6 +57,15 @@ public class ArticleService {
     @Autowired
     private CollectionArticleMapper collectionArticleMapper;
 
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+
+    @Autowired
+    private RedissonClient redissonClient;
+
+    @Autowired
+    ObjectMapper objectMapper;
+
     public void addArticle(Long userUid, String title, String articleContent, String tagStr) {
         Long articleUid = snowflake.nextId();
         articleMapper.insertArticle(articleUid, userUid, title, articleContent, 0);
@@ -76,7 +93,6 @@ public class ArticleService {
         }
 
         articleMapper.updateArticle(articleUid, title, articleContent);
-        // tagArticleMapper.deleteArticle(articleUid);
 
         // 将oldTagStr和TagStr基于逗号进行分割，将oldTagStr包含，tagStr没有的标签删除，反之则插入
         oldTagStr = oldTagStr.replace('，', ',');
@@ -93,6 +109,20 @@ public class ArticleService {
                 tagArticleMapper.insertTagArticle(articleUid, tag.trim());
             }
         }
+
+        // 新增缓存失效逻辑
+        String cacheKey = "article:detail:" + articleUid;
+        redisTemplate.delete(cacheKey);
+        
+        // 扩展：延迟双删（防旧数据回写）
+        new Thread(() -> {
+            try {
+                Thread.sleep(1000); // 延迟1秒
+                redisTemplate.delete(cacheKey);
+            } catch (InterruptedException e) {
+                log.error("延迟双删异常", e);
+            }
+        }).start();
         log.info("用户{}修改文章{}成功", userUid, articleUid);
     }
 
@@ -106,17 +136,67 @@ public class ArticleService {
         log.info("删除文章{}成功", articleUid);
     }
 
+    @SuppressWarnings("unchecked")
     public ArticleDetailVO searchArticle(Long articleUid) {
-        boolean isArticleExist = articleMapper.isArticleExist(articleUid);
-        if (!isArticleExist) {
+        // 1. 构建缓存键
+        String cacheKey = "article:detail:" + articleUid;
+        String viewCountKey = "article:view_count:" + articleUid;
+
+        // 2. 缓存命中逻辑
+        Map<String, Object> redisData = (Map<String, Object>)redisTemplate.opsForValue().get(cacheKey);
+        ArticleDetailVO article = objectMapper.convertValue(redisData, ArticleDetailVO.class);
+        if (article != null) {
+            // 2.1 异步更新阅读量（Redis原子操作）
+            redisTemplate.opsForValue().increment(viewCountKey, 1);
+            log.info("从缓存读取热点文章");
+            return article;
+        }
+
+        // 3. 缓存未命中时的保护逻辑（空值缓存防穿透）
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(cacheKey))) {
             throw new BusinessException(ResultCodeEnum.ARTICLE_NOT_EXIST, "文章不存在");
         }
 
-        ArticleDetailVO article = articleMapper.selectArticle(articleUid);
-        articleMapper.updateViewCount(articleUid);
+        // 4. 数据库查询（增加分布式锁防击穿）
+        RLock lock = redissonClient.getLock("article_lock:" + articleUid);
+        try {
+            lock.lock();
+            // 4.1 二次检查缓存（可能在等待锁期间已有线程加载数据）
+            redisData = (Map<String, Object>)redisTemplate.opsForValue().get(cacheKey);
+            article = objectMapper.convertValue(redisData, ArticleDetailVO.class);
+            if (article != null) return article;
 
-        log.info("获取文章成功");
-        return article;
+            // 4.2 数据库查询
+            boolean isArticleExist = articleMapper.isArticleExist(articleUid);
+            if (!isArticleExist) {
+                redisTemplate.opsForValue().set(cacheKey, "", 5, TimeUnit.MINUTES); // 空值缓存
+                throw new BusinessException(ResultCodeEnum.ARTICLE_NOT_EXIST, "文章不存在");
+            }
+
+            article = articleMapper.selectArticle(articleUid);
+            
+            // 5. 数据回填缓存
+            redisTemplate.opsForValue().set(cacheKey, article, 1 + ThreadLocalRandom.current().nextInt(5), TimeUnit.HOURS); // 随机过期时间防雪崩
+            
+            // 6. 初始化阅读量
+            redisTemplate.opsForValue().setIfAbsent(viewCountKey, article.getViewCount());
+            
+            return article;
+        } finally {
+            lock.unlock();
+            // 7. 异步更新数据库阅读量
+            this.syncViewCount(articleUid, viewCountKey);
+        }
+    }
+
+    @Async("taskExecutor")
+    public void syncViewCount(Long articleUid, String viewCountKey) { // 不需要手动传递参数
+        // 直接使用自动注入的组件
+        Long increment = redisTemplate.opsForValue().decrement(viewCountKey, 0);
+        if (increment != null && increment > 0) {
+            articleMapper.updateViewCount(articleUid, increment);
+            redisTemplate.opsForValue().decrement(viewCountKey, increment);
+        }
     }
 
     public PageInfo<ArticleBriefVO> searchArticleList(Integer currentPage, Integer pageSize) {

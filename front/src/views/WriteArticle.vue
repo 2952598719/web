@@ -49,6 +49,7 @@ onMounted(async () => {
                 }
             }
         })
+        vditor.value.setTheme("dark", "dark")
     } else {
         router.push("/PageNotFound")
     }

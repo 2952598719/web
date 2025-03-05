@@ -84,6 +84,12 @@
         WHERE user_uid = #{userUid} AND user_status = 0
     </select>
 
+    <select id="selectNickNameFromUserUid">
+        SELECT nick_name
+        FROM t_user
+        WHERE user_uid = #{userUid} AND user_status = 0
+    </select>
+
     <select id="selectAvatarUid">
         SELECT avatar_uid
         FROM t_user

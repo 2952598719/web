@@ -1,10 +1,16 @@
 <template>
-    <Header/>
+    <Header />
+
+    <el-divider />
     <div class="content-main">
         <router-view />
         <div class="background-image" :style="{ backgroundImage: `url(${userStoreObject.background})` }"></div>
     </div>
     <Footer />
+
+    <div class="hello">
+        <div ref="live2dContentRef" id="live2d"></div>
+    </div>
 
 </template>
 
@@ -15,6 +21,7 @@ import { useUserStore } from './utils/stores';
 
 const userStoreObject = useUserStore();
 userStoreObject.loadBackground()
+
 
 </script>
 
@@ -27,24 +34,24 @@ userStoreObject.loadBackground()
 
 .content-main {
     flex: 1;
-    /* 关键属性：填充剩余空间 */
     position: relative;
-    /* 创建定位上下文 */
-    /* min-height: calc(100vh - 120px); */
-    /* 根据 Header/Footer 实际高度调整 */
+    overflow-y: auto;
+    /* 新增滚动条 */
 }
 
+
 .background-image {
-    position: absolute;
-    /* 相对于 content-main 定位 */
+    position: fixed;
+    /* 改为固定定位 */
     top: 0;
     left: 0;
-    width: 100%;
-    height: 110%;
-    /* 继承父容器高度 */
+    width: 100vw;
+    /* 使用视口单位 */
+    height: 100vh;
     z-index: -1;
     opacity: 0.6;
     background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
 }
-
 </style>

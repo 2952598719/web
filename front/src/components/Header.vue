@@ -29,6 +29,14 @@
                         <span class="icon-text">管理</span>
                     </div>
                 </el-button>
+                <el-button class="notice" link @click="gotoNotice" v-if="userStoreObject.isLogin">
+                    <div class="icon-container">
+                        <el-icon :size="30">
+                            <Message />
+                        </el-icon>
+                        <span class="icon-text">通知</span>
+                    </div>
+                </el-button>
                 <el-dropdown @command="handleBackground">
                     <el-button class="picture" link>
                         <div class="icon-container">
@@ -64,7 +72,7 @@
         </template>
     </el-page-header>
 
-    <el-divider />
+    
 
     <el-dialog v-model="dialogVisible" @close="dialogClose" :lock-scroll="false">
         <el-tabs v-model="activeTab">
@@ -144,7 +152,7 @@ import { useUserStore } from '@/utils/stores';
 import { loginApi, emailLoginApi, logoutApi, registerApi, sendCodeApi } from '@/apis/apiUser';
 import { removeToken, setToken } from '@/utils/funcs';
 import { ElMessage } from 'element-plus';
-import { House, ArrowLeft, Star, Document, Picture, ArrowDown } from '@element-plus/icons-vue';
+import { House, ArrowLeft, Star, Document, Picture, ArrowDown, Message } from '@element-plus/icons-vue';
 import type { LoginForm, RegisterForm } from '@/utils/infs';
 
 const userStoreObject = useUserStore()
@@ -194,6 +202,10 @@ function gotoManage() {
     router.push("/articleList/manage")
 }
 
+function gotoNotice() {
+    router.push("/notice")
+}
+
 function gotoCollection() {
     router.push("/collection")
 }
@@ -235,14 +247,9 @@ async function sendVerificationCode() {
         if(response.code === 99999) {
             ElMessage.success('验证码已发送');
             startCountdown();
-        } else if(response.code === 70002) {
-            ElMessage.success('邮件发送失败');
-        } else if(response.code === 70001) {
-            ElMessage.success('邮箱不存在');
         } else {
-            ElMessage.success('未知错误');
-        }
-        
+            ElMessage.error(response.msg)
+        }    
     } catch (error) {
         ElMessage.error('发送验证码失败');
         isSending.value = false;
@@ -277,7 +284,6 @@ async function submitLogin() {
                 code: ''
             });
         } else {
-            console.log("Aaaaa")
             response = await emailLoginApi({
                 userName: '',
                 passWord: '',
@@ -356,15 +362,14 @@ const registerRules = ref({    // 登录无需验证
 }
 
 .el-page-header {
-    margin-top: 10px;
+    background-color: white;
+    padding-top: 10px;
+    padding-bottom: 10px;
     padding-left: 20px;
     padding-right: 50px;
 }
 
-.el-divider {
-    margin-top: 10px;
-    margin-bottom: 5px;
-}
+
 
 .el-dropdown-link:focus-visible {
     outline: unset;
@@ -392,6 +397,7 @@ const registerRules = ref({    // 登录无需验证
 
 .collect,
 .manage,
+.notice,
 .picture {
     display: flex;
     justify-content: center;
