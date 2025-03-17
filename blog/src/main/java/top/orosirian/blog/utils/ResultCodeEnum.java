@@ -32,6 +32,8 @@ public enum ResultCodeEnum {
     CODE_EXPIRED(70003, "验证码已过期"),
     CODE_WRONG(70004, "验证码错误"),
     CODE_RETRY_LIMIT(70005, "验证码错误次数过多"),
+    SERVER_BUSY(70006, "并发冲突"),
+    SERVER_ERROR(70007, "读取错误"),
     ;
     
 

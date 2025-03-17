@@ -1,6 +1,7 @@
 package top.orosirian.blog.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import cn.hutool.core.lang.Snowflake;
@@ -31,6 +32,9 @@ public class VoteService {
     @Autowired
     private NoticeMapper noticeMapper;
 
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+
 
     public void vote(Long targetUid, Long userUid, boolean voteType) {
         boolean isTargetExist = articleMapper.isArticleExist(targetUid) || commentMapper.isCommentExist(targetUid);
@@ -40,12 +44,20 @@ public class VoteService {
 
         voteMapper.vote(targetUid, userUid, voteType);
 
+
+        Long articleAuthorUid = articleMapper.selectAuthorUid(targetUid);
+        Long commentAuthorUid = commentMapper.selectAuthorUid(targetUid);
+        if(articleAuthorUid != null) {
+            // 更新缓存
+            if(voteType) {
+                redisTemplate.opsForValue().increment("article:like:" + targetUid);
+            } else {
+                redisTemplate.opsForValue().increment("article:dislike:" + targetUid);
+            }
+        }
+
         if(voteType == true) {
-            Long articleAuthorUid = articleMapper.selectAuthorUid(targetUid);
-            Long commentAuthorUid = commentMapper.selectAuthorUid(targetUid);
-
             Long noticeUid = noticeMapper.selectNoticeUid(userUid, targetUid);
-
             if(articleAuthorUid != null) {
                 if(noticeUid != null) {
                     noticeMapper.updateNotice(noticeUid, 1);
@@ -69,10 +81,16 @@ public class VoteService {
         if(!isTargetExist) {
             throw new BusinessException(ResultCodeEnum.VOTE_TARGET_NOT_EXIST);
         }
-        // boolean isVoted = voteMapper.checkVote(targetUid, userUid, voteType);
-        // if(!isVoted) {
-        //     throw new BusinessException(ResultCodeEnum.VOTE_NOT_VOTE);
-        // }
+        
+        Long articleAuthorUid = articleMapper.selectAuthorUid(targetUid);
+        if(articleAuthorUid != null) {
+            // 更新缓存
+            if(voteType) {
+                redisTemplate.opsForValue().decrement("article:like:" + targetUid);
+            } else {
+                redisTemplate.opsForValue().decrement("article:dislike:" + targetUid);
+            }
+        }
 
         voteMapper.disvote(targetUid, userUid);
         log.info("用户{}取消赞踩{}成功", userUid, targetUid);

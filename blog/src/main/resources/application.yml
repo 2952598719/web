@@ -8,8 +8,8 @@ spring:
     application: 
         name: blog
     datasource:
-        # url: jdbc:mysql://1Panel-mysql-1O2U:3306/blog
-        url : jdbc:mysql://127.0.0.1:3306/blog
+        url: jdbc:mysql://1Panel-mysql-1O2U:3306/blog
+        # url : jdbc:mysql://127.0.0.1:3306/blog
         username : blog
         driverClassName : com.mysql.cj.jdbc.Driver
         password : mysql_PBEMhH
@@ -29,8 +29,8 @@ spring:
     data:
         redis:    # redis配置 
             database: 0     # Redis数据库索引（默认为0）
-            # host: 1Panel-redis-xK6i
-            host: 127.0.0.1
+            host: 1Panel-redis-xK6i
+            # host: 127.0.0.1
             port: 6379      # Redis服务器连接端口  
             password: redis_PERai4
             timeout: 10s    # 连接超时时间
@@ -41,8 +41,8 @@ spring:
                     max-idle: 10      # 连接池中的最大空闲连接
                     min-idle: 0       # 连接池中的最小空闲连接
     rabbitmq:
-        # host: 1Panel-rabbitmq-ITTq
-        host: 127.0.0.1
+        host: 1Panel-rabbitmq-ITTq
+        # host: 127.0.0.1
         port: 5672
         username: guest
         password: guest

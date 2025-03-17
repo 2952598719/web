@@ -3,6 +3,7 @@ package top.orosirian.blog.service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import com.github.pagehelper.PageHelper;
@@ -33,6 +34,9 @@ public class CommentService {
     @Autowired
     private NoticeMapper noticeMapper;
 
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+
     public void addComment(Long userUid, Long articleUid, Long replyUid, String commentContent) {
         boolean isArticleExists = articleMapper.isArticleExist(articleUid);
         if(!isArticleExists) {
@@ -51,6 +55,7 @@ public class CommentService {
         
         Long commentUid = snowflake.nextId();
         commentMapper.insertComment(commentUid, userUid, articleUid, replyUid, commentContent);
+        redisTemplate.opsForValue().increment("article:comment:" + articleUid);
 
         if(replyUid == 0) {     // 对文章的评论
             Long authorUid = articleMapper.selectAuthorUid(articleUid);
@@ -67,6 +72,8 @@ public class CommentService {
         if(!isCommentBelongToUser) {
             throw new BusinessException(ResultCodeEnum.COMMENT_NOT_BELONG_USER);
         }
+        Long articleUid = commentMapper.selectArticleUid(commentUid);
+        redisTemplate.opsForValue().decrement("article:comment:" + articleUid);
 
         commentMapper.deleteComment(commentUid);
         log.info("用户{}已删除评论{}", userUid, commentUid);
