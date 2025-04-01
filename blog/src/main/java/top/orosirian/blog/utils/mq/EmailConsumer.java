@@ -18,7 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @RocketMQMessageListener(topic = "MAIL", consumerGroup = "mail_group", messageModel = MessageModel.CLUSTERING)
 @Slf4j
-@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 public class EmailConsumer implements RocketMQListener<EmailTask>  {
 
     private static String fromEmailAddress = "orosirian <orosirian@mail.orosirian.top>";
