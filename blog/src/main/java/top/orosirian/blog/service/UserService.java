@@ -3,8 +3,9 @@ package top.orosirian.blog.service;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.springframework.amqp.core.MessageDeliveryMode;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.apache.rocketmq.client.producer.SendCallback;
+import org.apache.rocketmq.client.producer.SendResult;
+import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -37,6 +38,7 @@ public class UserService {
     private final Integer MAX_RETRY_COUNT = 5;
     private final String CODE_KEY_PREFIX = "captcha:code:";
     private final String CODE_ERROR_PREFIX = "captcha:error:";
+    private static final String TOPIC = "MAIL";
 
     @Autowired
     private Snowflake snowflake;    // 想使用Snowflake和SaToken要加config文件
@@ -45,7 +47,7 @@ public class UserService {
     private StringRedisTemplate stringRedisTemplate;
 
     @Autowired
-    private RabbitTemplate rabbitTemplate;
+    private RocketMQTemplate rocketMQTemplate;
 
     @Autowired
     private UserMapper userMapper;
@@ -140,18 +142,27 @@ public class UserService {
 
         // 1. 生成6位随机验证码
         String code = RandomUtil.randomNumbers(6);
-        // 2. 保存到Redis（15分钟有效期）
+        
+        // 2.1 初始化重试计数器
+        String retryKey = "email:retry:" + emailAddress;
+        stringRedisTemplate.opsForValue().set(retryKey, "0", 15, TimeUnit.MINUTES);
+        
+        // 2.2 保存到Redis（15分钟有效期）
         stringRedisTemplate.opsForValue().set(CODE_KEY_PREFIX + emailAddress, code, 15, TimeUnit.MINUTES);
         // 3. 发送邮件
-        rabbitTemplate.convertAndSend(
-            "email.direct",
-            "email.verify",
-            new EmailTask(emailAddress, code),
-            message -> {    // 关键：设置消息持久化
-                message.getMessageProperties().setDeliveryMode(MessageDeliveryMode.PERSISTENT);
-                return message;
-            }
-        );
+        rocketMQTemplate.asyncSend(TOPIC, 
+                                    new EmailTask(emailAddress, code), 
+                                    new SendCallback() {
+                                        @Override
+                                        public void onSuccess(SendResult sendResult) {
+                                            System.out.printf("异步发送成功: %s", sendResult);
+                                        }
+
+                                        @Override
+                                        public void onException(Throwable throwable) {
+                                            System.out.printf("异步发送失败: %s", throwable.getMessage());
+                                        }
+        });
         log.info("邮件任务提交成功");
     }
 

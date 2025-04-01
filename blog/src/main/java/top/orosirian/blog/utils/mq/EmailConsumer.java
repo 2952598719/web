@@ -1,9 +1,11 @@
 package top.orosirian.blog.utils.mq;
 
-import org.springframework.amqp.AmqpRejectAndDontRequeueException;
-import org.springframework.amqp.core.Message;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.apache.rocketmq.spring.annotation.MessageModel;
+import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
+import org.apache.rocketmq.spring.core.RocketMQListener;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.Role;
 import org.springframework.stereotype.Component;
 
 import com.tencentcloudapi.common.exception.TencentCloudSDKException;
@@ -14,8 +16,10 @@ import com.tencentcloudapi.ses.v20201002.models.Template;
 import lombok.extern.slf4j.Slf4j;
 
 @Component
+@RocketMQMessageListener(topic = "MAIL", consumerGroup = "mail_group", messageModel = MessageModel.CLUSTERING)
 @Slf4j
-public class EmailHandler {
+@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
+public class EmailConsumer implements RocketMQListener<EmailTask>  {
 
     private static String fromEmailAddress = "orosirian <orosirian@mail.orosirian.top>";
 
@@ -24,19 +28,14 @@ public class EmailHandler {
     @Autowired
     private SesClient sesClient;
 
-    @RabbitListener(queues = "email.verify.queue")
-    public void handleEmailTask(EmailTask task) {
+    @Override
+    public void onMessage(EmailTask task) {
         try {
             sendEmail(task.getEmailAddress(), task.getCode());
         } catch (Exception e) {
             log.error("邮件发送失败: {}", task.getEmailAddress(), e);
-            throw new AmqpRejectAndDontRequeueException(e); // 触发重试机制
+            e.printStackTrace();
         }
-    }
-
-    @RabbitListener(queues = "email.dead.queue")
-    public void handleDeadLetter(EmailTask task, Message failedMessage) {
-        log.warn("邮件 {} 发送最终失败: {}", task.getEmailAddress(), failedMessage);
     }
 
     void sendEmail(String emailAddress, String code) throws TencentCloudSDKException {

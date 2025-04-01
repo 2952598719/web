@@ -3,21 +3,21 @@ import { getToken } from '../utils/funcs'
 
 axios.defaults.headers['Content-Type'] = "application/json;charset=utf-8"
 
-// const vanillaRequest = axios.create({
-//     baseURL: "http://localhost:8081/api/blog",
-// })
-
-// const tokenRequest = axios.create({
-//     baseURL: "http://localhost:8081/api/blog",
-// })
-
 const vanillaRequest = axios.create({
-    baseURL: "http://orosirian.top:8081/api/blog",
+    baseURL: "http://localhost:8081/api/blog",
 })
 
 const tokenRequest = axios.create({
-    baseURL: "http://orosirian.top:8081/api/blog",
+    baseURL: "http://localhost:8081/api/blog",
 })
+
+// const vanillaRequest = axios.create({
+//     baseURL: "http://orosirian.top:8081/api/blog",
+// })
+
+// const tokenRequest = axios.create({
+//     baseURL: "http://orosirian.top:8081/api/blog",
+// })
 
 tokenRequest.interceptors.request.use(   // 发送请求前的拦截器
     (config) => {     // 比如request.get({...})：config就是大括号部分，可能包含url, data之类的参数

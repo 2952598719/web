@@ -29,6 +29,8 @@
 		<!--mybatis-plus 3.5.5由于jsqlparser冲突，只能和pagehelper 2.0兼容，3.5.7以上则可以正常与pagehelper 2.1兼容-->
 		<redisson-spring-boot-starter.version>3.45.0</redisson-spring-boot-starter.version>
 		<jackson-datatype-jsr310.version>2.18.3</jackson-datatype-jsr310.version>
+		<rocketmq-spring-boot-starter.version>2.3.3</rocketmq-spring-boot-starter.version>
+		<fastjson.version>2.0.57</fastjson.version>
 	</properties>
 
 	<dependencies>
@@ -131,15 +133,22 @@
 			<version>${tencentcloud-sdk-java.version}</version>
 		</dependency>
 
-		<dependency>			<!-- RabbitMQ -->
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-amqp</artifactId>
-        </dependency>
+		<dependency>			<!-- RocketMQ -->
+			<groupId>org.apache.rocketmq</groupId>
+			<artifactId>rocketmq-spring-boot-starter</artifactId>
+			<version>${rocketmq-spring-boot-starter.version}</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.redisson</groupId>
 			<artifactId>redisson-spring-boot-starter</artifactId>
 			<version>${redisson-spring-boot-starter.version}</version>
+		</dependency>
+		
+		<dependency>			<!-- fastjson -->
+			<groupId>com.alibaba</groupId>
+			<artifactId>fastjson</artifactId>
+			<version>${fastjson.version}</version>
 		</dependency>
 
 		<dependency>

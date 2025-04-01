@@ -50,8 +50,8 @@ public class SaTokenConfig implements WebMvcConfigurer {
 
 							// ---------- 设置跨域响应头 ----------
 							// 允许指定域访问跨域资源"http://47.121.178.97"
-							.setHeader("Access-Control-Allow-Origin", "http://www.orosirian.top")
-							// .setHeader("Access-Control-Allow-Origin", "http://localhost:5173")
+							// .setHeader("Access-Control-Allow-Origin", "http://www.orosirian.top")
+							.setHeader("Access-Control-Allow-Origin", "http://localhost:5173")
 							// .setHeader("Access-Control-Allow-Origin", "*")
 							// 允许所有请求方式
 							.setHeader("Access-Control-Allow-Methods", "*")
