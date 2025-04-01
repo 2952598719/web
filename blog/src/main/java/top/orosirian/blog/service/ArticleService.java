@@ -29,6 +29,8 @@ import top.orosirian.blog.mapper.CollectionMapper;
 import top.orosirian.blog.mapper.TagArticleMapper;
 import top.orosirian.blog.mapper.UserMapper;
 import top.orosirian.blog.mapper.VoteMapper;
+import top.orosirian.blog.utils.RedisKeyConstants;
+import top.orosirian.blog.utils.RedisRetryUtil;
 import top.orosirian.blog.utils.ResultCodeEnum;
 import top.orosirian.blog.utils.exception.BusinessException;
 
@@ -93,11 +95,7 @@ public class ArticleService {
         }
 
         articleMapper.updateArticle(articleUid, title, articleContent);
-        redisTemplate.delete("article:detail:" + articleUid);
-        redisTemplate.delete("article:like:" + articleUid);
-        redisTemplate.delete("article:dislike:" + articleUid);
-        redisTemplate.delete("article:comment:" + articleUid);
-        redisTemplate.delete("article:view:" + articleUid);
+        redisTemplate.delete(String.format(RedisKeyConstants.ARTICLE_HASH_KEY, articleUid));
 
         // 将oldTagStr和TagStr基于逗号进行分割，将oldTagStr包含，tagStr没有的标签删除，反之则插入
         oldTagStr = oldTagStr.replace('，', ',');
@@ -125,8 +123,7 @@ public class ArticleService {
         }
 
         articleMapper.deleteArticle(articleUid);
-        String cacheKey = "article:detail:" + articleUid;
-        redisTemplate.delete(cacheKey);
+        redisTemplate.delete(String.format(RedisKeyConstants.ARTICLE_HASH_KEY, articleUid));
         for (String tag : tagArticleMapper.selectTagsByArticleUid(articleUid)) {
             tagArticleMapper.deleteTagArticle(articleUid, tag);
         }
@@ -136,28 +133,20 @@ public class ArticleService {
 
     @SuppressWarnings("unchecked")
     public ArticleDetailVO searchArticle(Long articleUid) {
-        String cacheKey = "article:detail:" + articleUid;
+        String articleHashKey = String.format(RedisKeyConstants.ARTICLE_HASH_KEY, articleUid);
 
         // 1. 优先检查缓存
-        Map<String, Object> redisData = (Map<String, Object>) redisTemplate.opsForValue().get(cacheKey);
-        if (redisData != null) {
-            redisTemplate.opsForValue().increment("article:view:" + articleUid, 1);
+        if(redisTemplate.hasKey(articleHashKey)) {
+            Map<Object, Object> redisData = redisTemplate.opsForHash().entries(articleHashKey);
+            redisTemplate.opsForHash().increment(String.format(RedisKeyConstants.ARTICLE_HASH_KEY, articleUid), RedisKeyConstants.HASH_VIEW_KEY, 1);
             articleMapper.updateViewCount(articleUid, 1L);
             ArticleDetailVO article = objectMapper.convertValue(redisData, ArticleDetailVO.class);
-            Integer like = (Integer) redisTemplate.opsForValue().get("article:like:" + articleUid);
-            Integer dislike = (Integer) redisTemplate.opsForValue().get("article:dislike:" + articleUid);
-            Integer commentCount = (Integer) redisTemplate.opsForValue().get("article:comment:" + articleUid);
-            Integer viewCount = (Integer) redisTemplate.opsForValue().get("article:view:" + articleUid);
-            if(like != null) article.setLikeNum(like);
-            if(dislike != null) article.setDislikeNum(dislike);
-            if(commentCount != null) article.setCommentCount(commentCount);
-            if(viewCount != null) article.setViewCount(Long.valueOf(viewCount));
             log.info("从缓存中获取文章{}成功", articleUid);
             return article;
         }
 
         // 2. 使用带超时的锁（避免永久阻塞）
-        RLock lock = redissonClient.getLock("article_lock:" + articleUid);
+        RLock lock = redissonClient.getLock(String.format(RedisKeyConstants.ARTICLE_LOCK_KEY, articleUid));
         try {
             // 设置锁超时时间为3秒，等待锁时间为0（立即失败）
             boolean locked = lock.tryLock(0, 3, TimeUnit.SECONDS);
@@ -166,71 +155,44 @@ public class ArticleService {
             }
 
             // 3. 二次检查缓存（可能在等待锁期间已有其他线程加载）
-            redisData = (Map<String, Object>) redisTemplate.opsForValue().get(cacheKey);
-            if (redisData != null) {
-                redisTemplate.opsForValue().increment("article:view:" + articleUid, 1);
-                articleMapper.updateViewCount(articleUid, 1L);
+            String cacheKey = String.format(RedisKeyConstants.ARTICLE_HASH_KEY, articleUid);
+            if(redisTemplate.hasKey(cacheKey)) {
+                Map<Object, Object> redisData = redisTemplate.opsForHash().entries(cacheKey);
+                redisTemplate.opsForHash().increment(String.format(RedisKeyConstants.ARTICLE_HASH_KEY, articleUid), RedisKeyConstants.HASH_VIEW_KEY, 1);
+                articleMapper.updateViewCount(articleUid, 1L); 
                 ArticleDetailVO article = objectMapper.convertValue(redisData, ArticleDetailVO.class);
-                Integer like = (Integer) redisTemplate.opsForValue().get("article:like:" + articleUid);
-                Integer dislike = (Integer) redisTemplate.opsForValue().get("article:dislike:" + articleUid);
-                Integer commentCount = (Integer) redisTemplate.opsForValue().get("article:comment:" + articleUid);
-                Long viewCount = (Long) redisTemplate.opsForValue().get("article:view:" + articleUid);
-                if(like != null) article.setLikeNum(like);
-                if(dislike != null) article.setDislikeNum(dislike);
-                if(commentCount != null) article.setCommentCount(commentCount);
-                if(viewCount != null) article.setViewCount(viewCount);
                 log.info("从缓存中获取文章{}成功", articleUid);
                 return article;
             }
 
             // 4. 数据库查询
             ArticleDetailVO article = articleMapper.selectArticle(articleUid);
-            if (article == null) {
-                redisTemplate.opsForValue().set(cacheKey, "", 5, TimeUnit.MINUTES);
-                throw new BusinessException(ResultCodeEnum.ARTICLE_NOT_EXIST);
-            }
+            // if (article == null) {
+            //     redisTemplate.opsForValue().set(cacheKey, "", 5, TimeUnit.MINUTES);
+            //     throw new BusinessException(ResultCodeEnum.ARTICLE_NOT_EXIST);
+            // }
 
             // 5. 异步回填缓存（避免锁内执行Redis操作）
             CompletableFuture.runAsync(() -> {
                 try {
-                    int expireTime = 1 + ThreadLocalRandom.current().nextInt(5);
-                    redisTemplate.opsForValue().set(
-                        cacheKey, 
-                        article,  // 确保此时article不为null
-                        expireTime,
-                        TimeUnit.HOURS
-                    );
-                    redisTemplate.opsForValue().set(
-                        "article:like:" + articleUid,
-                        article.getLikeNum(),
-                        expireTime,
-                        TimeUnit.HOURS
-                    );
-                    redisTemplate.opsForValue().set(
-                        "article:dislike:" + articleUid,
-                        article.getDislikeNum(),
-                        expireTime,
-                        TimeUnit.HOURS
-                    );
-                    redisTemplate.opsForValue().set(
-                        "article:comment:" + articleUid,
-                        article.getCommentCount(),
-                        expireTime,
-                        TimeUnit.HOURS
-                    );
-                    redisTemplate.opsForValue().set(
-                        "article:view:" + articleUid,
-                        article.getViewCount(),
-                        expireTime,
-                        TimeUnit.HOURS
-                    );
+                    RedisRetryUtil.retryWithBackoff(() -> {
+                        int expireTime = 1 + ThreadLocalRandom.current().nextInt(5);
+                        // 将article对象放入hash中，字段名为article的每个属性，值为其对应值
+                        Map<String, Object> articleMap = objectMapper.convertValue(article, Map.class);
+                        redisTemplate.opsForHash().putAll(articleHashKey, articleMap);
+                        redisTemplate.opsForHash().increment(articleHashKey, RedisKeyConstants.HASH_VIEW_KEY, 1);
+                        redisTemplate.expire(articleHashKey, expireTime, TimeUnit.HOURS);
+                        log.info("缓存文章{}成功", articleUid);
+                        return null;
+                    }, 3, 2000);
                 } catch (Exception e) {
-                    log.error("缓存回填失败，articleUid: {}", articleUid, e);
-                }
+                    e.printStackTrace();
+                } // 最大重试3次，初始间隔2秒
+            }).exceptionally(e -> {
+                log.error("缓存回填最终失败，articleUid: {}", articleUid, e);
+                return null;
             });
 
-            articleMapper.updateViewCount(articleUid, 1L);
-            redisTemplate.opsForValue().increment("article:view:" + articleUid);
             log.info("从数据库中获取文章{}成功", articleUid);
             return article;
         } catch (InterruptedException e) {

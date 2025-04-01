@@ -15,6 +15,7 @@ import top.orosirian.blog.entity.vo.CommentVO;
 import top.orosirian.blog.mapper.ArticleMapper;
 import top.orosirian.blog.mapper.CommentMapper;
 import top.orosirian.blog.mapper.NoticeMapper;
+import top.orosirian.blog.utils.RedisKeyConstants;
 import top.orosirian.blog.utils.ResultCodeEnum;
 import top.orosirian.blog.utils.exception.BusinessException;
 
@@ -55,7 +56,9 @@ public class CommentService {
         
         Long commentUid = snowflake.nextId();
         commentMapper.insertComment(commentUid, userUid, articleUid, replyUid, commentContent);
-        redisTemplate.opsForValue().increment("article:comment:" + articleUid);
+        if(redisTemplate.hasKey(String.format(RedisKeyConstants.ARTICLE_HASH_KEY, articleUid))) {
+            redisTemplate.opsForHash().increment(String.format(RedisKeyConstants.ARTICLE_HASH_KEY, articleUid), RedisKeyConstants.HASH_COMMENT_KEY, 1);
+        }
 
         if(replyUid == 0) {     // 对文章的评论
             Long authorUid = articleMapper.selectAuthorUid(articleUid);
@@ -73,8 +76,9 @@ public class CommentService {
             throw new BusinessException(ResultCodeEnum.COMMENT_NOT_BELONG_USER);
         }
         Long articleUid = commentMapper.selectArticleUid(commentUid);
-        redisTemplate.opsForValue().decrement("article:comment:" + articleUid);
-
+        if(redisTemplate.hasKey(String.format(RedisKeyConstants.ARTICLE_HASH_KEY, articleUid))) {
+            redisTemplate.opsForHash().increment(String.format(RedisKeyConstants.ARTICLE_HASH_KEY, articleUid), RedisKeyConstants.HASH_COMMENT_KEY, -1);
+        }
         commentMapper.deleteComment(commentUid);
         log.info("用户{}已删除评论{}", userUid, commentUid);
     }

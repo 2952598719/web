@@ -39,7 +39,7 @@
     </div>
 
     <div class="view-count">
-        阅读量：{{ articleData.viewCount + 1 }}
+        阅读量：{{ articleData.viewCount }}
     </div>
 
     <div class="tag-area">

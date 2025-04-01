@@ -10,6 +10,7 @@ import top.orosirian.blog.mapper.ArticleMapper;
 import top.orosirian.blog.mapper.CommentMapper;
 import top.orosirian.blog.mapper.NoticeMapper;
 import top.orosirian.blog.mapper.VoteMapper;
+import top.orosirian.blog.utils.RedisKeyConstants;
 import top.orosirian.blog.utils.ResultCodeEnum;
 import top.orosirian.blog.utils.exception.BusinessException;
 
@@ -48,11 +49,12 @@ public class VoteService {
         Long articleAuthorUid = articleMapper.selectAuthorUid(targetUid);
         Long commentAuthorUid = commentMapper.selectAuthorUid(targetUid);
         if(articleAuthorUid != null) {
-            // 更新缓存
-            if(voteType) {
-                redisTemplate.opsForValue().increment("article:like:" + targetUid);
-            } else {
-                redisTemplate.opsForValue().increment("article:dislike:" + targetUid);
+            if(redisTemplate.hasKey(String.format(RedisKeyConstants.ARTICLE_HASH_KEY, targetUid))) {
+                if(voteType) {
+                    redisTemplate.opsForHash().increment(String.format(RedisKeyConstants.ARTICLE_HASH_KEY, targetUid), RedisKeyConstants.HASH_LIKE_KEY, 1);
+                } else {
+                    redisTemplate.opsForHash().increment(String.format(RedisKeyConstants.ARTICLE_HASH_KEY, targetUid), RedisKeyConstants.HASH_DISLIKE_KEY, 1);
+                }
             }
         }
 
@@ -84,11 +86,12 @@ public class VoteService {
         
         Long articleAuthorUid = articleMapper.selectAuthorUid(targetUid);
         if(articleAuthorUid != null) {
-            // 更新缓存
-            if(voteType) {
-                redisTemplate.opsForValue().decrement("article:like:" + targetUid);
-            } else {
-                redisTemplate.opsForValue().decrement("article:dislike:" + targetUid);
+            if(redisTemplate.hasKey(String.format(RedisKeyConstants.ARTICLE_HASH_KEY, targetUid))) {
+                if(voteType) {
+                    redisTemplate.opsForHash().increment(String.format(RedisKeyConstants.ARTICLE_HASH_KEY, targetUid), RedisKeyConstants.HASH_LIKE_KEY, -1);
+                } else {
+                    redisTemplate.opsForHash().increment(String.format(RedisKeyConstants.ARTICLE_HASH_KEY, targetUid), RedisKeyConstants.HASH_DISLIKE_KEY, -1);
+                }
             }
         }
 
