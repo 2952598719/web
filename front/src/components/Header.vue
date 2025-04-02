@@ -149,7 +149,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useUserStore } from '@/utils/stores';
-import { loginApi, emailLoginApi, logoutApi, registerApi, sendCodeApi } from '@/apis/apiUser';
+import { loginApi, emailLoginApi, logoutApi, registerApi, sendCodeApi, getUnreadNumApi } from '@/apis/apiUser';
 import { removeToken, setToken } from '@/utils/funcs';
 import { ElMessage } from 'element-plus';
 import { House, ArrowLeft, Star, Document, Picture, ArrowDown, Message } from '@element-plus/icons-vue';
@@ -167,6 +167,8 @@ const loginMethod = ref<'username' | 'email'>('username');
 const isSending = ref(false);
 const countdown = ref(0);
 const sendBtnText = ref('发送验证码');
+const unreadNum = ref<string>('0');
+
 
 const loginForm = ref<LoginForm>({
     userName: '',
@@ -320,6 +322,8 @@ async function submitRegister(registerForm: RegisterForm) {
         const response = await registerApi(registerForm)
         if (response.code === 99999) {
             ElMessage.success("注册成功")
+            loginForm.value.userName = registerForm.userName
+            loginForm.value.passWord = registerForm.passWord
             submitLogin()
         } else {
             ElMessage.error("注册失败，原因：" + response.msg)
@@ -333,6 +337,12 @@ async function submitRegister(registerForm: RegisterForm) {
         router.replace("/")
     }
 }
+
+async function getUnreadNum() {
+    unreadNum.value = await getUnreadNumApi();
+}
+
+
 
 const registerRules = ref({    // 登录无需验证
     userName: [

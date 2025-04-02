@@ -45,7 +45,6 @@ public class VoteService {
 
         voteMapper.vote(targetUid, userUid, voteType);
 
-
         Long articleAuthorUid = articleMapper.selectAuthorUid(targetUid);
         Long commentAuthorUid = commentMapper.selectAuthorUid(targetUid);
         if(articleAuthorUid != null) {
@@ -58,14 +57,16 @@ public class VoteService {
             }
         }
 
-        if(voteType == true) {
+        if(voteType == true && userUid != articleAuthorUid && userUid != commentAuthorUid) {
             Long noticeUid = noticeMapper.selectNoticeUid(userUid, targetUid);
+            String notificationKey = "";
             if(articleAuthorUid != null) {
-                if(noticeUid != null) {
+                if(noticeUid != null) {     // 如果告示已存在，就更新它的时间
                     noticeMapper.updateNotice(noticeUid, 1);
                 } else {
                     noticeMapper.insertNotice(snowflake.nextId(), articleAuthorUid, userUid, targetUid, 1, targetUid);
                 }
+                notificationKey = String.format(RedisKeyConstants.NOTIFICATION_UNREAD_KEY, articleAuthorUid);
             } else if(commentAuthorUid != null) {
                 Long articleUid = commentMapper.selectArticleUid(targetUid);
                 if(noticeUid != null) {
@@ -73,6 +74,14 @@ public class VoteService {
                 } else {
                     noticeMapper.insertNotice(snowflake.nextId(), commentAuthorUid, userUid, targetUid, 2, articleUid);
                 }
+                notificationKey = String.format(RedisKeyConstants.NOTIFICATION_UNREAD_KEY, commentAuthorUid);
+            }
+
+            
+            if(redisTemplate.hasKey(notificationKey)) {
+                redisTemplate.opsForValue().increment(notificationKey);
+            } else {
+                redisTemplate.opsForValue().set(notificationKey, "1");
             }
         }
         log.info("用户{}赞踩{}成功", userUid, targetUid);

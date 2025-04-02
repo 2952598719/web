@@ -17,7 +17,7 @@ CREATE TABLE t_user(
     user_name   VARCHAR(20) NOT NULL COMMENT '用户名',              -- 长度最小限制在后端，而不是数据库实现
     pass_word   CHAR(60)    NOT NULL COMMENT '密码的bcrypt加密',    -- 不用VARCHAR是为了向面试官说明VARCHAR和CHAR的不同点，虽然MySQL8貌似两者已经差不多了
     nick_name   VARCHAR(255) NOT NULL COMMENT '昵称',
-    avatar_uid  BIGINT      DEFAULT 1885248114797973504 COMMENT '头像uid',
+    avatar_uid  BIGINT      DEFAULT 0 COMMENT '头像uid',
     gender      TINYINT     NOT NULL DEFAULT 0 COMMENT '性别，0为未知，1为男，2为女',
     biography   VARCHAR(255) COMMENT '个人简介',
     birthday    DATE        COMMENT '生日',
@@ -132,8 +132,7 @@ CREATE TABLE t_image(
     update_time DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY(image_uid)
 ) COMMENT '图片表';
-INSERT INTO t_image(image_uid, image_url, image_hash) 
-    VALUES(1885248114797973504, 'https://s2.loli.net/2025/01/31/DwlN42pIBOjUxdg.jpg', 'O7XaKGQtAigekxdvpHYF6nZmJ4'); 
+INSERT INTO t_image(image_uid, image_url, image_hash) VALUES(0, "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png", 0)
 
 DROP TABLE IF EXISTS t_notice;
 CREATE TABLE t_notice (

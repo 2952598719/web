@@ -60,12 +60,17 @@ public class CommentService {
             redisTemplate.opsForHash().increment(String.format(RedisKeyConstants.ARTICLE_HASH_KEY, articleUid), RedisKeyConstants.HASH_COMMENT_KEY, 1);
         }
 
-        if(replyUid == 0) {     // 对文章的评论
-            Long authorUid = articleMapper.selectAuthorUid(articleUid);
-            noticeMapper.insertNotice(snowflake.nextId(), authorUid, userUid, commentUid, 3, articleUid);
-        } else {                // 对评论的评论
-            Long authorUid = commentMapper.selectAuthorUid(replyUid);
-            noticeMapper.insertNotice(snowflake.nextId(), authorUid, userUid, commentUid, 4, articleUid);
+        
+        Long authorUid = (replyUid == 0) ? articleMapper.selectAuthorUid(articleUid) : commentMapper.selectAuthorUid(replyUid);
+        int noticeType = (replyUid == 0) ? 3 : 4;
+        String notificationKey = String.format(RedisKeyConstants.NOTIFICATION_UNREAD_KEY, authorUid);
+        if(authorUid != userUid) {
+            noticeMapper.insertNotice(snowflake.nextId(), authorUid, userUid, commentUid, noticeType, articleUid);
+            if(redisTemplate.hasKey(notificationKey)) {
+                redisTemplate.opsForValue().increment(notificationKey);
+            } else {
+                redisTemplate.opsForValue().set(notificationKey, "1");
+            }
         }
         log.info("用户{}发表评论{}成功", userUid, commentUid);
     }

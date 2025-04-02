@@ -101,7 +101,6 @@ async function fetchUserInfo() {
 		const response = await getUserInfoApi(userName.value)
 		if (response.code === 20002) router.push("/pageNotFound")
 		Object.assign(userInfo.value, response.data);
-
 		followCondition.value.masterNum = await getMasterNumApi(userName.value)
 		followCondition.value.fanNum = await getFanNumApi(userName.value)
 	} catch (error) {

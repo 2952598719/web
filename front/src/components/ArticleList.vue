@@ -130,9 +130,6 @@ async function getArticleList() {
         articles.value = response.value.data.list
         articleCount.value = response.value.data.total
         for (const article of articles.value) {
-            if(article.avatarUrl == null) {
-                article.avatarUrl = "https://s2.loli.net/2025/01/27/Y7otDBN8cXLlFpH.jpg"
-            }
             if(article.likeNum == null) {
                 article.likeNum = 0
             }

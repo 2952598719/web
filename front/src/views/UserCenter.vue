@@ -239,7 +239,7 @@ async function uploadAvatarImage(params: any) {
             ElMessage.error("上传头像失败")
             return
         } else {
-            if (userInfo.value.avatarHash != '') {
+            if (userInfo.value.avatarHash != '0') {
                 await deleteImageApi(userInfo.value.avatarHash)
             }
             const tempAvatarUrl = response.data.url

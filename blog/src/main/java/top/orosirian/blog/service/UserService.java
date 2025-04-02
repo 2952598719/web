@@ -27,6 +27,7 @@ import top.orosirian.blog.mapper.FollowMapper;
 import top.orosirian.blog.mapper.ImageMapper;
 import top.orosirian.blog.mapper.NoticeMapper;
 import top.orosirian.blog.mapper.UserMapper;
+import top.orosirian.blog.utils.RedisKeyConstants;
 import top.orosirian.blog.utils.ResultCodeEnum;
 import top.orosirian.blog.utils.exception.BusinessException;
 import top.orosirian.blog.utils.mq.EmailTask;
@@ -36,8 +37,6 @@ import top.orosirian.blog.utils.mq.EmailTask;
 public class UserService {
 
     private final Integer MAX_RETRY_COUNT = 5;
-    private final String CODE_KEY_PREFIX = "captcha:code:";
-    private final String CODE_ERROR_PREFIX = "captcha:error:";
     private static final String TOPIC = "MAIL";
 
     @Autowired
@@ -108,8 +107,8 @@ public class UserService {
         }
 
         // 查看输入错误次数是否超限
-        String codeKey = CODE_KEY_PREFIX + emailAddress;
-        String errorKey = CODE_ERROR_PREFIX + emailAddress;
+        String codeKey = String.format(RedisKeyConstants.EMAIL_CODE_KEY, emailAddress);
+        String errorKey = String.format(RedisKeyConstants.EMAIL_ERROR_KEY, emailAddress);
         Long errorCount = stringRedisTemplate.opsForValue().increment(errorKey);
         if (errorCount != null && errorCount >= MAX_RETRY_COUNT) {
             stringRedisTemplate.delete(codeKey);
@@ -118,7 +117,7 @@ public class UserService {
         }
 
         // 获取验证码
-        String storedCode = stringRedisTemplate.opsForValue().get(CODE_KEY_PREFIX + emailAddress);
+        String storedCode = stringRedisTemplate.opsForValue().get(codeKey);
         if (storedCode == null) {
             throw new BusinessException(ResultCodeEnum.CODE_EXPIRED, "验证码已过期");
         }
@@ -127,7 +126,7 @@ public class UserService {
             throw new BusinessException(ResultCodeEnum.CODE_WRONG, "验证码错误");
         }
         // 删除已使用的验证码
-        stringRedisTemplate.delete(CODE_KEY_PREFIX + emailAddress);
+        stringRedisTemplate.delete(codeKey);
         
         log.info("用户{}通过邮箱登录成功", userUid);
         return userUid;
@@ -148,7 +147,8 @@ public class UserService {
         stringRedisTemplate.opsForValue().set(retryKey, "0", 15, TimeUnit.MINUTES);
         
         // 2.2 保存到Redis（15分钟有效期）
-        stringRedisTemplate.opsForValue().set(CODE_KEY_PREFIX + emailAddress, code, 15, TimeUnit.MINUTES);
+        String codeKey = String.format(RedisKeyConstants.EMAIL_CODE_KEY, emailAddress);
+        stringRedisTemplate.opsForValue().set(codeKey, code, 15, TimeUnit.MINUTES);
         // 3. 发送邮件
         rocketMQTemplate.asyncSend(TOPIC, 
                                     new EmailTask(emailAddress, code), 
@@ -172,9 +172,6 @@ public class UserService {
 
     public UserBriefVO checkLogin(Long userUid) {
         UserBriefVO userBasicVO = userMapper.selectUserBasic(userUid);
-        if(userBasicVO.getAvatarUrl() == null) {
-            userBasicVO.setAvatarUrl("https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png");
-        }
         log.info("获取用户{}基础信息成功", userUid);
         return userBasicVO;
     }
@@ -238,6 +235,14 @@ public class UserService {
         } else {
             noticeMapper.updateNotice(noticeUid, 0);
         }
+
+        String notificationKey = String.format(RedisKeyConstants.NOTIFICATION_UNREAD_KEY, masterUid);
+        if(stringRedisTemplate.hasKey(notificationKey)) {
+            stringRedisTemplate.opsForValue().increment(notificationKey);
+        } else {
+            stringRedisTemplate.opsForValue().set(notificationKey, "1");
+        }
+
         log.info("{}关注{}成功", fanUid, masterUid);
     }
 
@@ -302,8 +307,23 @@ public class UserService {
             noticeVO.setSubjectContent(content);
         }
 
+        String notificationKey = String.format(RedisKeyConstants.NOTIFICATION_UNREAD_KEY, userUid);
+        stringRedisTemplate.opsForValue().set(notificationKey, "0");
+
         PageInfo<NoticeVO> pageInfo = new PageInfo<>(noticeList);
         log.info("获取用户{}的第{}页通知列表成功", userUid, currentPage);
         return pageInfo;
     }
+
+    public String searchUnreadNum(Long userUid) {
+        String notificationKey = String.format(RedisKeyConstants.NOTIFICATION_UNREAD_KEY, userUid);
+        if(stringRedisTemplate.hasKey(notificationKey)) {
+            int notificationNum = Integer.valueOf(stringRedisTemplate.opsForValue().get(notificationKey));
+            if(notificationNum <= 999) return String.valueOf(notificationNum);
+            else return "999+";
+        } else {
+            return "0";
+        }
+    }
+
 }

@@ -173,12 +173,18 @@ public class UserController {
         return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "粉丝列表获取成功", fanList);
     }
 
-
     @GetMapping("/user/notice")
     @SaCheckLogin
     public SaResult getNoticeList(@RequestParam Integer currentPage, @RequestParam Integer pageSize) {
         PageInfo<NoticeVO> noticeList = userService.searchNoticeList(currentPage, pageSize, StpUtil.getLoginIdAsLong());
         return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "通知列表获取成功", noticeList);
+    }
+
+    @GetMapping("/user/unread")
+    @SaCheckLogin
+    public SaResult getUnreadNum() {
+        String unread = userService.searchUnreadNum(StpUtil.getLoginIdAsLong());
+        return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "未读消息数获取成功", unread);
     }
 
 }

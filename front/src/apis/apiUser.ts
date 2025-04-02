@@ -207,3 +207,10 @@ export async function getNoticeListApi(currentPage: number, pageSize: number) {
     return response.data
 }
 
+export async function getUnreadNumApi() {
+    const response = await tokenRequest({
+        method: 'GET',
+        url: '/user/unread'
+    })
+    return response.data
+}
