@@ -72,7 +72,6 @@ public class CommentService {
                 redisTemplate.opsForValue().set(notificationKey, 1);
             }
         }
-        log.info("用户{}发表评论{}成功", userUid, commentUid);
     }
 
     public void removeComment(Long userUid, Long commentUid) {

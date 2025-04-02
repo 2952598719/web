@@ -58,6 +58,11 @@
             <artifactId>spring-boot-starter-websocket</artifactId>
         </dependency>
 
+		<dependency>			<!-- 切面 -->
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-aop</artifactId>
+		</dependency>
+
 		<!--数据库类-->
 
 		<dependency>			<!-- mysql -->

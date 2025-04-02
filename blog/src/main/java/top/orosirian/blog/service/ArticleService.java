@@ -81,7 +81,6 @@ public class ArticleService {
                 tagArticleMapper.insertTagArticle(articleUid, tag);
             }
         }
-        log.info("用户{}发表文章{}成功", userUid, articleUid);
     }
 
     public void modifyArticle(Long articleUid, Long userUid, String title, String articleContent, String tagStr, String oldTagStr) {
@@ -112,8 +111,6 @@ public class ArticleService {
                 tagArticleMapper.insertTagArticle(articleUid, tag.trim());
             }
         }
-
-        log.info("用户{}修改文章{}成功", userUid, articleUid);
     }
 
     public void removeArticle(Long articleUid, Long userUid) {
