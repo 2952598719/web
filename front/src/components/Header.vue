@@ -15,34 +15,42 @@
             <div class="button-group">
                 <el-button class="collect" link @click="gotoCollection" v-if="userStoreObject.isLogin">
                     <div class="icon-container">
-                        <el-icon :size="30">
-                            <Star />
-                        </el-icon>
+                        <el-badge :value="0" :max="999" class="message-badge" :show-zero="false">
+                            <el-icon :size="30">
+                                <Star />
+                            </el-icon>
+                        </el-badge>
                         <span class="icon-text">收藏</span>
                     </div>
                 </el-button>
                 <el-button class="manage" link @click="gotoManage" v-if="userStoreObject.isLogin">
                     <div class="icon-container">
-                        <el-icon :size="30">
-                            <Document />
-                        </el-icon>
+                        <el-badge :value="0" :max="999" class="message-badge" :show-zero="false">
+                            <el-icon :size="30">
+                                <Document />
+                            </el-icon>
+                        </el-badge>
                         <span class="icon-text">管理</span>
                     </div>
                 </el-button>
                 <el-button class="notice" link @click="gotoNotice" v-if="userStoreObject.isLogin">
-                    <div class="icon-container">
+                <div class="icon-container">
+                    <el-badge :value="unreadNum" :max="999" class="message-badge" :show-zero="false">
                         <el-icon :size="30">
                             <Message />
                         </el-icon>
-                        <span class="icon-text">通知</span>
-                    </div>
+                    </el-badge>
+                    <span class="icon-text">通知</span>
+                </div>
                 </el-button>
                 <el-dropdown @command="handleBackground">
                     <el-button class="picture" link>
                         <div class="icon-container">
-                            <el-icon :size="30">
-                                <Picture />
-                            </el-icon>
+                            <el-badge :value="0" :max="999" class="message-badge" :show-zero="false">
+                                <el-icon :size="30">
+                                    <Picture />
+                                </el-icon>
+                            </el-badge>
                             <span class="icon-text">背景</span>
                         </div>
                     </el-button>
@@ -167,8 +175,13 @@ const loginMethod = ref<'username' | 'email'>('username');
 const isSending = ref(false);
 const countdown = ref(0);
 const sendBtnText = ref('发送验证码');
-const unreadNum = ref<string>('0');
+const unreadNum = ref<number>(0);
 
+onMounted(() => {
+    if(userStoreObject.isLogin) {
+        getUnreadNum()
+    }
+})
 
 const loginForm = ref<LoginForm>({
     userName: '',
@@ -206,6 +219,9 @@ function gotoManage() {
 
 function gotoNotice() {
     router.push("/notice")
+    setTimeout(() => {
+        getUnreadNum();
+    }, 100);
 }
 
 function gotoCollection() {
@@ -300,6 +316,7 @@ async function submitLogin() {
                 setToken(token);
                 useUserStore().update();
                 ElMessage.success('登录成功');
+                getUnreadNum();
             } else {
                 ElMessage.error('token为空');
             }
@@ -339,10 +356,9 @@ async function submitRegister(registerForm: RegisterForm) {
 }
 
 async function getUnreadNum() {
-    unreadNum.value = await getUnreadNumApi();
+    const response = await getUnreadNumApi();
+    unreadNum.value = response.data;
 }
-
-
 
 const registerRules = ref({    // 登录无需验证
     userName: [
@@ -426,7 +442,7 @@ const registerRules = ref({    // 登录无需验证
     font-size: 12px;
     /* 设置字体大小 */
     /* margin-left: 0; */
-    margin-right: 6px;
+    /* margin-right: 6px; */
 }
 
 .icon-container {
@@ -496,4 +512,29 @@ const registerRules = ref({    // 登录无需验证
 .el-input {
     width: 98%;
 }
+
+.message-badge {
+  .el-badge__content {
+    background-color: #ff4949;
+    border: none;
+    right: 0;
+    top: auto;
+    bottom: 0;
+    transform: translateY(50%) translateX(50%);
+    padding: 3px 6px;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+  }
+  
+  .el-badge__content.is-fixed {
+    position: absolute;
+  }
+}
+
 </style>

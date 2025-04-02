@@ -81,7 +81,7 @@ public class VoteService {
             if(redisTemplate.hasKey(notificationKey)) {
                 redisTemplate.opsForValue().increment(notificationKey);
             } else {
-                redisTemplate.opsForValue().set(notificationKey, "1");
+                redisTemplate.opsForValue().set(notificationKey, 1);
             }
         }
         log.info("用户{}赞踩{}成功", userUid, targetUid);

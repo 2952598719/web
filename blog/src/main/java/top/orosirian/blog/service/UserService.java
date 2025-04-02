@@ -7,7 +7,7 @@ import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import com.github.pagehelper.PageHelper;
@@ -43,7 +43,7 @@ public class UserService {
     private Snowflake snowflake;    // 想使用Snowflake和SaToken要加config文件
 
     @Autowired
-    private StringRedisTemplate stringRedisTemplate;
+    private RedisTemplate<String, Object> redisTemplate;
 
     @Autowired
     private RocketMQTemplate rocketMQTemplate;
@@ -109,24 +109,24 @@ public class UserService {
         // 查看输入错误次数是否超限
         String codeKey = String.format(RedisKeyConstants.EMAIL_CODE_KEY, emailAddress);
         String errorKey = String.format(RedisKeyConstants.EMAIL_ERROR_KEY, emailAddress);
-        Long errorCount = stringRedisTemplate.opsForValue().increment(errorKey);
+        Long errorCount = redisTemplate.opsForValue().increment(errorKey);
         if (errorCount != null && errorCount >= MAX_RETRY_COUNT) {
-            stringRedisTemplate.delete(codeKey);
-            stringRedisTemplate.delete(errorKey);
+            redisTemplate.delete(codeKey);
+            redisTemplate.delete(errorKey);
             throw new BusinessException(ResultCodeEnum.CODE_RETRY_LIMIT, "错误次数超限");
         }
 
         // 获取验证码
-        String storedCode = stringRedisTemplate.opsForValue().get(codeKey);
+        String storedCode = String.valueOf(redisTemplate.opsForValue().get(codeKey));
         if (storedCode == null) {
             throw new BusinessException(ResultCodeEnum.CODE_EXPIRED, "验证码已过期");
         }
         if (!storedCode.equals(code)) {
-            stringRedisTemplate.opsForValue().increment(errorKey);  // 自动从字符串到数字
+            redisTemplate.opsForValue().increment(errorKey);  // 自动从字符串到数字
             throw new BusinessException(ResultCodeEnum.CODE_WRONG, "验证码错误");
         }
         // 删除已使用的验证码
-        stringRedisTemplate.delete(codeKey);
+        redisTemplate.delete(codeKey);
         
         log.info("用户{}通过邮箱登录成功", userUid);
         return userUid;
@@ -144,11 +144,11 @@ public class UserService {
         
         // 2.1 初始化重试计数器
         String retryKey = "email:retry:" + emailAddress;
-        stringRedisTemplate.opsForValue().set(retryKey, "0", 15, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().set(retryKey, 0, 15, TimeUnit.MINUTES);
         
         // 2.2 保存到Redis（15分钟有效期）
         String codeKey = String.format(RedisKeyConstants.EMAIL_CODE_KEY, emailAddress);
-        stringRedisTemplate.opsForValue().set(codeKey, code, 15, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().set(codeKey, code, 15, TimeUnit.MINUTES);
         // 3. 发送邮件
         rocketMQTemplate.asyncSend(TOPIC, 
                                     new EmailTask(emailAddress, code), 
@@ -237,10 +237,10 @@ public class UserService {
         }
 
         String notificationKey = String.format(RedisKeyConstants.NOTIFICATION_UNREAD_KEY, masterUid);
-        if(stringRedisTemplate.hasKey(notificationKey)) {
-            stringRedisTemplate.opsForValue().increment(notificationKey);
+        if(redisTemplate.hasKey(notificationKey)) {
+            redisTemplate.opsForValue().increment(notificationKey);
         } else {
-            stringRedisTemplate.opsForValue().set(notificationKey, "1");
+            redisTemplate.opsForValue().set(notificationKey, 1);
         }
 
         log.info("{}关注{}成功", fanUid, masterUid);
@@ -308,22 +308,23 @@ public class UserService {
         }
 
         String notificationKey = String.format(RedisKeyConstants.NOTIFICATION_UNREAD_KEY, userUid);
-        stringRedisTemplate.opsForValue().set(notificationKey, "0");
+        redisTemplate.opsForValue().set(notificationKey, 0);
 
         PageInfo<NoticeVO> pageInfo = new PageInfo<>(noticeList);
         log.info("获取用户{}的第{}页通知列表成功", userUid, currentPage);
         return pageInfo;
     }
 
-    public String searchUnreadNum(Long userUid) {
+    public int searchUnreadNum(Long userUid) {
         String notificationKey = String.format(RedisKeyConstants.NOTIFICATION_UNREAD_KEY, userUid);
-        if(stringRedisTemplate.hasKey(notificationKey)) {
-            int notificationNum = Integer.valueOf(stringRedisTemplate.opsForValue().get(notificationKey));
-            if(notificationNum <= 999) return String.valueOf(notificationNum);
-            else return "999+";
+        log.info("获取消息数成功");
+        if(redisTemplate.hasKey(notificationKey)) {
+            int notificationNum = (int) redisTemplate.opsForValue().get(notificationKey);
+            return notificationNum;
         } else {
-            return "0";
+            return 0;
         }
+
     }
 
 }

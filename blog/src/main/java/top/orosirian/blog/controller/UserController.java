@@ -183,7 +183,7 @@ public class UserController {
     @GetMapping("/user/unread")
     @SaCheckLogin
     public SaResult getUnreadNum() {
-        String unread = userService.searchUnreadNum(StpUtil.getLoginIdAsLong());
+        int unread = userService.searchUnreadNum(StpUtil.getLoginIdAsLong());
         return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "未读消息数获取成功", unread);
     }
 

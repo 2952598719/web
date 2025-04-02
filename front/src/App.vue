@@ -20,7 +20,7 @@ import Footer from './components/Footer.vue'
 import { useUserStore } from './utils/stores';
 
 const userStoreObject = useUserStore();
-userStoreObject.loadBackground()
+userStoreObject.loadBackground();
 
 
 </script>

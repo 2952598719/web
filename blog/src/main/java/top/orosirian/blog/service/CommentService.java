@@ -69,7 +69,7 @@ public class CommentService {
             if(redisTemplate.hasKey(notificationKey)) {
                 redisTemplate.opsForValue().increment(notificationKey);
             } else {
-                redisTemplate.opsForValue().set(notificationKey, "1");
+                redisTemplate.opsForValue().set(notificationKey, 1);
             }
         }
         log.info("用户{}发表评论{}成功", userUid, commentUid);
