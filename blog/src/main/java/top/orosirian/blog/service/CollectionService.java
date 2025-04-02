@@ -31,7 +31,6 @@ public class CollectionService {
         // collectionName可以重复，也无需验证
         Long collectionUid = snowflake.nextId();
         collectionMapper.insertCollection(collectionUid, userUid, collectionName);
-        log.info("用户{}新增收藏夹{}成功", userUid, collectionUid);
     }
 
     public void removeCollection(Long userUid, Long collectionUid) {
@@ -46,7 +45,7 @@ public class CollectionService {
 
         collectionMapper.deleteCollection(collectionUid);
         collectionArticleMapper.deleteCollection(collectionUid);
-        log.info("用户{}删除收藏夹{}成功", userUid, collectionUid);
+        
     }
 
     public void modifyCollection(Long userUid, Long collectionUid, String collectionName) {
@@ -58,14 +57,11 @@ public class CollectionService {
         if (!isCollectionBelong) {
             throw new BusinessException(ResultCodeEnum.COLLECTION_NOT_BELONG_USER);
         }
-
         collectionMapper.updateCollection(collectionUid, collectionName);
-        log.info("用户{}修改收藏夹{}成功", userUid, collectionUid);
     }
 
     public List<CollectionVO> searchMyCollectionList(Long userUid) {
         List<CollectionVO> list = collectionMapper.selectMyCollectionList(userUid);
-        log.info("用户{}获取个人收藏夹成功", userUid);
         return list;
     }
 
@@ -76,7 +72,6 @@ public class CollectionService {
             boolean selected = collectionArticleMapper.isCollectionContain(collectionUid, articleUid);
             collectionOfArticleVO.setSelected(selected);
         }
-        log.info("获取用户{}关于文章{}的收藏夹成功", userUid, articleUid);
         return list;
     }
 

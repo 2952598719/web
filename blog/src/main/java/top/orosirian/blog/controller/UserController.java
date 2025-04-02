@@ -100,7 +100,8 @@ public class UserController {
 
     @GetMapping("/user/info/{userName}")
     public SaResult getUserInfo(@PathVariable String userName) {
-        UserDetailVO userInfoVO = userService.searchUserByUserName(userName);
+        Long userUid = userService.searchUserUidByUserName(userName);
+        UserDetailVO userInfoVO = userService.searchUserByUserUid(userUid);
         return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "用户详细信息获取成功", userInfoVO);
     }
 
@@ -131,45 +132,52 @@ public class UserController {
     @PostMapping("/user/follow/{masterUserName}")
     @SaCheckLogin
     public SaResult follow(@PathVariable String masterUserName) {
-        userService.follow(masterUserName, StpUtil.getLoginIdAsLong());
+        Long masterUid = userService.searchUserUidByUserName(masterUserName);
+        userService.follow(masterUid, StpUtil.getLoginIdAsLong());
         return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "关注" + masterUserName + "成功", null);
     }
 
     @DeleteMapping("/user/follow/{masterUserName}")
     @SaCheckLogin
     public SaResult unfollow(@PathVariable String masterUserName) {
-        userService.removeFollow(masterUserName, StpUtil.getLoginIdAsLong());
+        Long masterUid = userService.searchUserUidByUserName(masterUserName);
+        userService.removeFollow(masterUid, StpUtil.getLoginIdAsLong());
         return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "取关" + masterUserName + "成功", null);
     }
 
     @GetMapping("/user/follow/{masterUserName}")
     @SaCheckLogin
     public SaResult checkFollow(@PathVariable String masterUserName) {
-        boolean isFollowed = userService.checkFollow(masterUserName, StpUtil.getLoginIdAsLong());
+        Long masterUid = userService.searchUserUidByUserName(masterUserName);
+        boolean isFollowed = userService.checkFollow(masterUid, StpUtil.getLoginIdAsLong());
         return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "检查关注成功", isFollowed);
     }
 
     @GetMapping("/user/info/{userName}/masterNum")
     public SaResult getUserMasterNum(@PathVariable String userName) {
-        Integer masterNum = userService.searchMasterNum(userName);
+        Long userUid = userService.searchUserUidByUserName(userName);
+        Integer masterNum = userService.searchMasterNum(userUid);
         return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "关注人数获取成功", masterNum);
     }
 
     @GetMapping("/user/info/{userName}/masterList")
     public SaResult getUserMasterList(@RequestParam Integer currentPage, @RequestParam Integer pageSize, @PathVariable String userName) {
-        PageInfo<UserBriefVO> masterList = userService.searchMasterList(currentPage, pageSize, userName);
+        Long userUid = userService.searchUserUidByUserName(userName);
+        PageInfo<UserBriefVO> masterList = userService.searchMasterList(currentPage, pageSize, userUid);
         return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "关注列表获取成功", masterList);
     }
 
     @GetMapping("/user/info/{userName}/fanNum")
     public SaResult getUserFanNum(@PathVariable String userName) {
-        Integer followerNum = userService.searchFanNum(userName);
+        Long userUid = userService.searchUserUidByUserName(userName);
+        Integer followerNum = userService.searchFanNum(userUid);
         return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "粉丝人数获取成功", followerNum);
     }
 
     @GetMapping("/user/info/{userName}/fanList")
     public SaResult getUserFanList(@RequestParam Integer currentPage, @RequestParam Integer pageSize, @PathVariable String userName) {
-        PageInfo<UserBriefVO> fanList = userService.searchFanList(currentPage, pageSize, userName);
+        Long userUid = userService.searchUserUidByUserName(userName);
+        PageInfo<UserBriefVO> fanList = userService.searchFanList(currentPage, pageSize, userUid);
         return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "粉丝列表获取成功", fanList);
     }
 

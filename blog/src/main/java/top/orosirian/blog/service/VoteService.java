@@ -57,7 +57,7 @@ public class VoteService {
             }
         }
 
-        if(voteType == true && userUid != articleAuthorUid && userUid != commentAuthorUid) {
+        if(voteType == true && !userUid.equals(articleAuthorUid) && !userUid.equals(commentAuthorUid)) {
             Long noticeUid = noticeMapper.selectNoticeUid(userUid, targetUid);
             String notificationKey = "";
             if(articleAuthorUid != null) {
@@ -84,7 +84,6 @@ public class VoteService {
                 redisTemplate.opsForValue().set(notificationKey, 1);
             }
         }
-        log.info("用户{}赞踩{}成功", userUid, targetUid);
     }
 
     public void disvote(Long targetUid, Long userUid, boolean voteType) {
@@ -105,12 +104,11 @@ public class VoteService {
         }
 
         voteMapper.disvote(targetUid, userUid);
-        log.info("用户{}取消赞踩{}成功", userUid, targetUid);
+        
     }
 
     public boolean checkVote(Long targetUid, Long userUid) {
         Boolean isVoted = voteMapper.checkVote(targetUid, userUid);
-        log.info("获取用户{}赞踩{}情况成功", userUid, targetUid);
         return isVoted;
     }
 

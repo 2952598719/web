@@ -25,7 +25,7 @@
                 </p>
                 <div class="comment-detail" v-html="comment.commentContent" />
                 <div class="functions" v-if="userStoreObject.isLogin">
-                    <div class="icon-with-text" @click="handleLikeComment(comment)">
+                    <div class="icon-with-text" @click="handleLikeComment(comment)" v-if="userStoreObject.userName != comment.userName">
                         <el-icon v-if="comment.realVoteType == 1" color="#409efc" :size="20">
                             <CaretTop />
                         </el-icon>
@@ -34,7 +34,7 @@
                         </el-icon>
                         <span class="icon-text">{{ comment.likeNum }}</span>
                     </div>
-                    <div class="icon-with-text" @click="handleDislikeComment(comment)">
+                    <div class="icon-with-text" @click="handleDislikeComment(comment)" v-if="userStoreObject.userName != comment.userName">
                         <el-icon v-if="comment.realVoteType == 2" color="#409efc" :size="20">
                             <CaretBottom />
                         </el-icon>

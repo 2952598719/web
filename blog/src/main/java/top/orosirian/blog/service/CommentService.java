@@ -43,7 +43,7 @@ public class CommentService {
         if(!isArticleExists) {
             throw new BusinessException(ResultCodeEnum.ARTICLE_NOT_EXIST);
         }
-        if(replyUid != 0) {
+        if(!replyUid.equals(0L)) {
             boolean isCommentExists = commentMapper.isCommentExist(replyUid);
             if(!isCommentExists) {
                 throw new BusinessException(ResultCodeEnum.COMMENT_NOT_EXIST);
@@ -60,11 +60,10 @@ public class CommentService {
             redisTemplate.opsForHash().increment(String.format(RedisKeyConstants.ARTICLE_HASH_KEY, articleUid), RedisKeyConstants.HASH_COMMENT_KEY, 1);
         }
 
-        
-        Long authorUid = (replyUid == 0) ? articleMapper.selectAuthorUid(articleUid) : commentMapper.selectAuthorUid(replyUid);
-        int noticeType = (replyUid == 0) ? 3 : 4;
+        Long authorUid = (replyUid.equals(0L)) ? articleMapper.selectAuthorUid(articleUid) : commentMapper.selectAuthorUid(replyUid);
+        int noticeType = (replyUid.equals(0L)) ? 3 : 4;
         String notificationKey = String.format(RedisKeyConstants.NOTIFICATION_UNREAD_KEY, authorUid);
-        if(authorUid != userUid) {
+        if(!authorUid.equals(userUid)) {
             noticeMapper.insertNotice(snowflake.nextId(), authorUid, userUid, commentUid, noticeType, articleUid);
             if(redisTemplate.hasKey(notificationKey)) {
                 redisTemplate.opsForValue().increment(notificationKey);
@@ -84,20 +83,17 @@ public class CommentService {
             redisTemplate.opsForHash().increment(String.format(RedisKeyConstants.ARTICLE_HASH_KEY, articleUid), RedisKeyConstants.HASH_COMMENT_KEY, -1);
         }
         commentMapper.deleteComment(commentUid);
-        log.info("用户{}已删除评论{}", userUid, commentUid);
     }
 
     public PageInfo<CommentVO> searchArticleComment(Long articleUid, Long userUid, Integer currentPage, Integer pageSize) {
         PageHelper.startPage(currentPage, pageSize);
         List<CommentVO> list = commentMapper.selectArticleCommentList(articleUid, userUid);
         PageInfo<CommentVO> pageInfo = new PageInfo<>(list);
-        log.info("获取文章{}评论列表成功", articleUid);
         return pageInfo;
     }
 
     public CommentVO searchComment(Long commentUid) {
         CommentVO comment = commentMapper.selectComment(commentUid);
-        log.info("获取评论{}成功", commentUid);
         return comment;
     }
     

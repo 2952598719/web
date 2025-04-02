@@ -21,6 +21,7 @@ import top.orosirian.blog.entity.param.ArticleParam;
 import top.orosirian.blog.entity.vo.ArticleBriefVO;
 import top.orosirian.blog.entity.vo.ArticleDetailVO;
 import top.orosirian.blog.service.ArticleService;
+import top.orosirian.blog.service.UserService;
 import top.orosirian.blog.utils.ResultCodeEnum;
 
 @Validated
@@ -29,6 +30,9 @@ public class ArticleController {
 
     @Autowired
     private ArticleService articleService;
+
+    @Autowired
+    private UserService userService;
 
     @PostMapping("/article")
     @SaCheckLogin
@@ -76,7 +80,8 @@ public class ArticleController {
 
     @GetMapping("/articles/userPage")
     public SaResult getUserArticleList(@RequestParam Integer currentPage, @RequestParam Integer pageSize, @RequestParam String userName) {
-        PageInfo<ArticleBriefVO> result = articleService.searchUserArticleList(currentPage, pageSize, userName);
+        Long userUid = userService.searchUserUidByUserName(userName);
+        PageInfo<ArticleBriefVO> result = articleService.searchUserArticleList(currentPage, pageSize, userUid);
         return new SaResult(ResultCodeEnum.SUCCESS.getCode(), "搜索文章列表成功", result);
     }
 

@@ -125,7 +125,6 @@ public class ArticleService {
             tagArticleMapper.deleteTagArticle(articleUid, tag);
         }
         collectionArticleMapper.deleteArticle(articleUid);
-        log.info("删除文章{}成功", articleUid);
     }
 
     @SuppressWarnings("unchecked")
@@ -138,7 +137,7 @@ public class ArticleService {
             redisTemplate.opsForHash().increment(String.format(RedisKeyConstants.ARTICLE_HASH_KEY, articleUid), RedisKeyConstants.HASH_VIEW_KEY, 1);
             articleMapper.updateViewCount(articleUid, 1L);
             ArticleDetailVO article = objectMapper.convertValue(redisData, ArticleDetailVO.class);
-            log.info("从缓存中获取文章{}成功", articleUid);
+            log.info("缓存中获取{}", articleUid);
             return article;
         }
 
@@ -158,12 +157,13 @@ public class ArticleService {
                 redisTemplate.opsForHash().increment(String.format(RedisKeyConstants.ARTICLE_HASH_KEY, articleUid), RedisKeyConstants.HASH_VIEW_KEY, 1);
                 articleMapper.updateViewCount(articleUid, 1L); 
                 ArticleDetailVO article = objectMapper.convertValue(redisData, ArticleDetailVO.class);
-                log.info("从缓存中获取文章{}成功", articleUid);
+                log.info("缓存中获取{}", articleUid);
                 return article;
             }
 
             // 4. 数据库查询
             ArticleDetailVO article = articleMapper.selectArticle(articleUid);
+            log.info("数据库中获取{}", articleUid);
             // if (article == null) {
             //     redisTemplate.opsForValue().set(cacheKey, "", 5, TimeUnit.MINUTES);
             //     throw new BusinessException(ResultCodeEnum.ARTICLE_NOT_EXIST);
@@ -189,8 +189,6 @@ public class ArticleService {
                 log.error("缓存回填最终失败，articleUid: {}", articleUid, e);
                 return null;
             });
-
-            log.info("从数据库中获取文章{}成功", articleUid);
             return article;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -206,7 +204,6 @@ public class ArticleService {
         PageHelper.startPage(currentPage, pageSize);
         List<ArticleBriefVO> list = articleMapper.selectArticleList();
         PageInfo<ArticleBriefVO> pageInfo = new PageInfo<>(list);
-        log.info("获取第{}页文章成功", currentPage);
         return pageInfo;
     }
 
@@ -214,17 +211,6 @@ public class ArticleService {
         PageHelper.startPage(currentPage, pageSize);
         List<ArticleBriefVO> list = articleMapper.selectTitleArticleList(title);
         PageInfo<ArticleBriefVO> pageInfo = new PageInfo<>(list);
-        log.info("获取第{}页文章成功", currentPage);
-        return pageInfo;
-    }
-
-    public PageInfo<ArticleBriefVO> searchUserArticleList(Integer currentPage, Integer pageSize, String userName) {
-        Long userUid = userMapper.selectUserUidFromUserName(userName);
-
-        PageHelper.startPage(currentPage, pageSize);
-        List<ArticleBriefVO> list = articleMapper.selectUserArticleList(userUid);
-        PageInfo<ArticleBriefVO> pageInfo = new PageInfo<>(list);
-        log.info("获取用户{}第{}页文章成功", userUid, currentPage);
         return pageInfo;
     }
 
@@ -232,7 +218,6 @@ public class ArticleService {
         PageHelper.startPage(currentPage, pageSize);
         List<ArticleBriefVO> list = articleMapper.selectUserArticleList(userUid);
         PageInfo<ArticleBriefVO> pageInfo = new PageInfo<>(list);
-        log.info("获取用户{}第{}页文章成功", userUid, currentPage);
         return pageInfo;
     }
 
@@ -240,13 +225,11 @@ public class ArticleService {
         PageHelper.startPage(currentPage, pageSize);
         List<ArticleBriefVO> list = articleMapper.selectMasterArticleList(userUid);
         PageInfo<ArticleBriefVO> pageInfo = new PageInfo<>(list);
-        log.info("获取用户{}关注列表第{}页文章成功", userUid, currentPage);
         return pageInfo;
     }
 
     public Integer searchVoteType(Long articleUid, Long userUid) {
         Boolean voteType = voteMapper.checkVote(articleUid, userUid);
-        log.info("获取文章{}点赞状态成功", articleUid);
         if(voteType == null) {
             return 0;
         } else if(voteType) {
@@ -260,7 +243,6 @@ public class ArticleService {
         PageHelper.startPage(currentPage, pageSize);
         List<ArticleBriefVO> list = articleMapper.selectTagArticleList(tagName);
         PageInfo<ArticleBriefVO> pageInfo = new PageInfo<>(list);
-        log.info("获取Tag {}文章列表成功", tagName);
         return pageInfo;
     }
 
@@ -269,9 +251,7 @@ public class ArticleService {
         if (!isArticleExist) {
             throw new BusinessException(ResultCodeEnum.ARTICLE_NOT_EXIST);
         }
-
         String[] tags = tagArticleMapper.selectTagsByArticleUid(articleUid);
-        log.info("获取文章{}的标签成功", articleUid);
         return tags;
     }
 
@@ -288,9 +268,8 @@ public class ArticleService {
         if (isCollectionContain) {
             throw new BusinessException(ResultCodeEnum.COLLECTION_EXIST_ARTICLE);
         }
-
         collectionArticleMapper.collect(collectionUid, articleUid);
-        log.info("文章{}已收藏至合集{}", articleUid, collectionUid);
+        
     }
 
     public void uncollect(Long userUid, Long collectionUid, Long articleUid) {
@@ -308,7 +287,7 @@ public class ArticleService {
         }
 
         collectionArticleMapper.uncollect(collectionUid, articleUid);
-        log.info("文章{}已从合集{}取消收藏", articleUid, collectionUid);
+        
     }
 
     public boolean checkCollect(Long userUid, Long collectionUid, Long articleUid) {
@@ -322,7 +301,7 @@ public class ArticleService {
         }
 
         boolean isCollectionContain = collectionArticleMapper.isCollectionContain(collectionUid, articleUid);
-        log.info("{}获取{}收藏情况成功", userUid, articleUid);
+        
         return isCollectionContain;
     }
 
@@ -330,7 +309,6 @@ public class ArticleService {
         PageHelper.startPage(currentPage, pageSize);
         List<ArticleBriefVO> list = articleMapper.selectCollectionArticleList(collectionUid);
         PageInfo<ArticleBriefVO> pageInfo = new PageInfo<>(list);
-        log.info("获取合集文章列表成功");
         return pageInfo;
     }
 

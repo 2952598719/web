@@ -78,13 +78,11 @@ public class UserService {
         Long snowUid = snowflake.nextId();
         String hashedPassword = BCrypt.hashpw(passWord);
         userMapper.insertUser(snowUid, userName, hashedPassword, nickName);
-        log.info("用户{}注册成功，用户名'{}'，昵称'{}'", snowUid, userName, nickName);
     }
 
     public void unregister(Long userUid) {
         String newUserName = RandomUtil.randomString(20);
         userMapper.deleteUser(userUid, newUserName, "已注销用户");
-        log.info("用户{}注销成功", userUid);
     }
 
     public Long login(String userName, String passWord) {
@@ -95,7 +93,6 @@ public class UserService {
         if(!BCrypt.checkpw(passWord, userMapper.selectPassWord(userUid))) {
             throw new BusinessException(ResultCodeEnum.PASSWORD_WRONG, "用户名或密码错误");
         }
-        log.info("用户{}登陆成功", userUid);
         return userUid;
     }
 
@@ -128,7 +125,6 @@ public class UserService {
         // 删除已使用的验证码
         redisTemplate.delete(codeKey);
         
-        log.info("用户{}通过邮箱登录成功", userUid);
         return userUid;
     }
 
@@ -163,16 +159,15 @@ public class UserService {
                                             System.out.printf("异步发送失败: %s", throwable.getMessage());
                                         }
         });
-        log.info("邮件任务提交成功");
+        
     }
 
     public void logout(Long userUid) {
-        log.info("用户{}登出成功", userUid);
+        
     }
 
     public UserBriefVO checkLogin(Long userUid) {
         UserBriefVO userBasicVO = userMapper.selectUserBasic(userUid);
-        log.info("获取用户{}基础信息成功", userUid);
         return userBasicVO;
     }
 
@@ -180,19 +175,21 @@ public class UserService {
      * 个人信息
      */
 
-    public UserDetailVO searchUserByUserName(String userName) {
+    public Long searchUserUidByUserName(String userName) {
         Long userUid = userMapper.selectUserUidFromUserName(userName);
         if(userUid == null) throw new BusinessException(ResultCodeEnum.USERNAME_NOT_EXIST, "用户名不存在");
+        return userUid;
+    }
 
+    public UserDetailVO searchUserByUserUid(Long userUid) {
+        if(userUid == null) throw new BusinessException(ResultCodeEnum.USERNAME_NOT_EXIST, "用户名不存在");
         UserDetailVO userInfoVO = userMapper.selectUserInfo(userUid);
-        log.info("获取用户{}详细信息成功", userUid);
         return userInfoVO;
     }
 
     public void modifyPassWord(Long userUid, String passWord) {
         String hashedPassword = BCrypt.hashpw(passWord);
-        userMapper.updatePassWord(userUid, hashedPassword);
-        log.info("用户{}密码更新成功", userUid);
+        userMapper.updatePassWord(userUid, hashedPassword); 
     }
 
     public void modifyUserInfo(Long userUid, ModifyInfoParam modifyInfoParam) {
@@ -201,20 +198,17 @@ public class UserService {
                                 modifyInfoParam.getBiography(), modifyInfoParam.getBirthday(), 
                                 modifyInfoParam.getPhoneNumber(), modifyInfoParam.getEmailAddress()
                             );
-        log.info("用户{}个人信息更新成功", userUid);
     }
 
     public void modifyAvatar(Long userUid, String avatarUrl, String avatarHash) {
         Long originAvatarUid = userMapper.selectAvatarUid(userUid);
-        if(originAvatarUid != null && !originAvatarUid.equals(1885248114797973504L)) {
+        if(originAvatarUid != null && !originAvatarUid.equals(0L)) {
             imageMapper.deleteImage(originAvatarUid);
         }
 
         Long avatarUid = snowflake.nextId();
         imageMapper.insertImage(avatarUid, avatarUrl, avatarHash);
         userMapper.updateAvatar(userUid, avatarUid);
-
-        log.info("用户{}头像更新成功", userUid);
     }
 
 
@@ -222,10 +216,9 @@ public class UserService {
      * 关注取关
      */
 
-     public void follow(String masterUserName, Long fanUid) {
-        Long masterUid = userMapper.selectUserUidFromUserName(masterUserName);
+    public void follow(Long masterUid, Long fanUid) {
         if(masterUid == null) throw new BusinessException(ResultCodeEnum.USER_NOT_EXIST);
-        if(masterUid == fanUid) throw new BusinessException(ResultCodeEnum.USER_FOLLOW_CONFLICT);
+        if(masterUid.equals(fanUid)) throw new BusinessException(ResultCodeEnum.USER_FOLLOW_CONFLICT);
 
         followMapper.insertFollow(masterUid, fanUid);
 
@@ -242,55 +235,40 @@ public class UserService {
         } else {
             redisTemplate.opsForValue().set(notificationKey, 1);
         }
-
-        log.info("{}关注{}成功", fanUid, masterUid);
     }
 
-    public void removeFollow(String masterUserName, Long fanUid) {
-        Long masterUid = userMapper.selectUserUidFromUserName(masterUserName);
+    public void removeFollow(Long masterUid, Long fanUid) {
         if(masterUid == null) throw new BusinessException(ResultCodeEnum.USER_NOT_EXIST);
-
         followMapper.deleteFollow(masterUid, fanUid);
-        log.info("{}取关{}成功", fanUid, masterUid);
     }
 
-    public boolean checkFollow(String masterUserName, Long fanUid) {
-        Long masterUid = userMapper.selectUserUidFromUserName(masterUserName);
+    public boolean checkFollow(Long masterUid, Long fanUid) {
         if(masterUid == null) throw new BusinessException(ResultCodeEnum.USER_NOT_EXIST);
         boolean isFollowed = followMapper.isFollowed(masterUid, fanUid);
-        log.info("用户关注情况获取成功");
         return isFollowed;
     }
 
-    public Integer searchMasterNum(String userName) {
-        Long userUid = userMapper.selectUserUidFromUserName(userName);
+    public Integer searchMasterNum(Long userUid) {
         Integer masterNum = followMapper.selectMasterNum(userUid);
-        log.info("用户关注人数获取成功");
         return masterNum;
     }
 
-    public PageInfo<UserBriefVO> searchMasterList(Integer currentPage, Integer pageSize, String userName) {
-        Long userUid = userMapper.selectUserUidFromUserName(userName);
+    public PageInfo<UserBriefVO> searchMasterList(Integer currentPage, Integer pageSize, Long userUid) {
         PageHelper.startPage(currentPage, pageSize);
         List<UserBriefVO> masterList = followMapper.selectMasterList(userUid);
         PageInfo<UserBriefVO> pageInfo = new PageInfo<>(masterList);
-        log.info("获取用户{}的第{}页关注列表成功", userUid, currentPage);
         return pageInfo;
     }
 
-    public Integer searchFanNum(String userName) {
-        Long userUid = userMapper.selectUserUidFromUserName(userName);
+    public Integer searchFanNum(Long userUid) {
         Integer fanNum = followMapper.selectFanNum(userUid);
-        log.info("用户粉丝人数获取成功");
         return fanNum;
     }
 
-    public PageInfo<UserBriefVO> searchFanList(Integer currentPage, Integer pageSize, String userName) {
-        Long userUid = userMapper.selectUserUidFromUserName(userName);
+    public PageInfo<UserBriefVO> searchFanList(Integer currentPage, Integer pageSize, Long userUid) {
         PageHelper.startPage(currentPage, pageSize);
         List<UserBriefVO> fanList = followMapper.selectFanList(userUid);
         PageInfo<UserBriefVO> pageInfo = new PageInfo<>(fanList);
-        log.info("获取用户{}的第{}页粉丝列表成功", userUid, currentPage);
         return pageInfo;
     }
     
@@ -311,20 +289,17 @@ public class UserService {
         redisTemplate.opsForValue().set(notificationKey, 0);
 
         PageInfo<NoticeVO> pageInfo = new PageInfo<>(noticeList);
-        log.info("获取用户{}的第{}页通知列表成功", userUid, currentPage);
         return pageInfo;
     }
 
     public int searchUnreadNum(Long userUid) {
         String notificationKey = String.format(RedisKeyConstants.NOTIFICATION_UNREAD_KEY, userUid);
-        log.info("获取消息数成功");
         if(redisTemplate.hasKey(notificationKey)) {
             int notificationNum = (int) redisTemplate.opsForValue().get(notificationKey);
             return notificationNum;
         } else {
             return 0;
         }
-
     }
 
 }
