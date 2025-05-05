@@ -27,7 +27,6 @@ import top.orosirian.blog.mapper.ArticleMapper;
 import top.orosirian.blog.mapper.CollectionArticleMapper;
 import top.orosirian.blog.mapper.CollectionMapper;
 import top.orosirian.blog.mapper.TagArticleMapper;
-import top.orosirian.blog.mapper.UserMapper;
 import top.orosirian.blog.mapper.VoteMapper;
 import top.orosirian.blog.utils.RedisKeyConstants;
 import top.orosirian.blog.utils.RedisRetryUtil;
@@ -43,9 +42,6 @@ public class ArticleService {
 
     @Autowired
     private ArticleMapper articleMapper;
-
-    @Autowired
-    private UserMapper userMapper;
 
     @Autowired
     private VoteMapper voteMapper;

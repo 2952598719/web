@@ -53,15 +53,15 @@
 			<scope>compile</scope>
 		</dependency>
 
-		<dependency>			<!-- websocket -->
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-websocket</artifactId>
-        </dependency>
-
 		<dependency>			<!-- 切面 -->
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-aop</artifactId>
 		</dependency>
+
+		<dependency>			<!-- RabbitMQ -->
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
 
 		<!--数据库类-->
 
@@ -95,9 +95,15 @@
 			<artifactId>commons-pool2</artifactId>
 		</dependency>
 
-		<dependency>
+		<dependency>			<!-- Redis -->
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-redis</artifactId>
+		</dependency>
+
+		<dependency>			<!-- Redisson -->
+			<groupId>org.redisson</groupId>
+			<artifactId>redisson-spring-boot-starter</artifactId>
+			<version>${redisson-spring-boot-starter.version}</version>
 		</dependency>
 
 		<!-- 工具 -->
@@ -141,18 +147,6 @@
 			<groupId>com.tencentcloudapi</groupId>
 			<artifactId>tencentcloud-sdk-java</artifactId>
 			<version>${tencentcloud-sdk-java.version}</version>
-		</dependency>
-
-		<dependency>			<!-- RocketMQ -->
-			<groupId>org.apache.rocketmq</groupId>
-			<artifactId>rocketmq-spring-boot-starter</artifactId>
-			<version>${rocketmq-spring-boot-starter.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.redisson</groupId>
-			<artifactId>redisson-spring-boot-starter</artifactId>
-			<version>${redisson-spring-boot-starter.version}</version>
 		</dependency>
 		
 		<dependency>			<!-- fastjson -->

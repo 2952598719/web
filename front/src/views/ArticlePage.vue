@@ -354,4 +354,12 @@ a {
 a:hover {
     text-decoration: underline;
 }
+
+.vditor-reset a, .vditor-ir__link {
+    color: #1890ff;
+    text-decoration: none;
+    outline: none;
+    cursor: pointer;
+}
+
 </style>

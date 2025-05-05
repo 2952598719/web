@@ -3,9 +3,8 @@ package top.orosirian.blog.service;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.rocketmq.client.producer.SendCallback;
-import org.apache.rocketmq.client.producer.SendResult;
-import org.apache.rocketmq.spring.core.RocketMQTemplate;
+import org.springframework.amqp.core.MessageDeliveryMode;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -37,7 +36,6 @@ import top.orosirian.blog.utils.mq.EmailTask;
 public class UserService {
 
     private final Integer MAX_RETRY_COUNT = 5;
-    private static final String TOPIC = "MAIL";
 
     @Autowired
     private Snowflake snowflake;    // 想使用Snowflake和SaToken要加config文件
@@ -46,7 +44,7 @@ public class UserService {
     private RedisTemplate<String, Object> redisTemplate;
 
     @Autowired
-    private RocketMQTemplate rocketMQTemplate;
+    private RabbitTemplate rabbitTemplate;
 
     @Autowired
     private UserMapper userMapper;
@@ -146,19 +144,15 @@ public class UserService {
         String codeKey = String.format(RedisKeyConstants.EMAIL_CODE_KEY, emailAddress);
         redisTemplate.opsForValue().set(codeKey, code, 15, TimeUnit.MINUTES);
         // 3. 发送邮件
-        rocketMQTemplate.asyncSend(TOPIC, 
-                                    new EmailTask(emailAddress, code), 
-                                    new SendCallback() {
-                                        @Override
-                                        public void onSuccess(SendResult sendResult) {
-                                            System.out.printf("异步发送成功: %s", sendResult);
-                                        }
-
-                                        @Override
-                                        public void onException(Throwable throwable) {
-                                            System.out.printf("异步发送失败: %s", throwable.getMessage());
-                                        }
-        });
+        rabbitTemplate.convertAndSend(
+            "email.direct",
+            "email.verify",
+            new EmailTask(emailAddress, code),
+            message -> {    // 关键：设置消息持久化
+                message.getMessageProperties().setDeliveryMode(MessageDeliveryMode.PERSISTENT);
+                return message;
+            }
+        );
         
     }
 

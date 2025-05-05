@@ -90,7 +90,7 @@
         FROM t_article AS a 
             LEFT JOIN t_user AS u ON a.user_uid = u.user_uid
             LEFT JOIN t_image i ON u.avatar_uid = i.image_uid
-        WHERE a.article_type = 0 AND a.title LIKE CONCAT('%', #{title}, '%')
+        WHERE a.article_type = 0 AND MATCH(a.title) AGAINST(#{title} IN BOOLEAN MODE)
         ORDER BY a.create_time DESC
     </select>
 

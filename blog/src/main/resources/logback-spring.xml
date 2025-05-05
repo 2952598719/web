@@ -16,8 +16,8 @@
     <appender name="CONSOLE-WITH-HIGHLIGHT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <pattern>${HIGHLIGHT_PATTERN}</pattern>
-            <!-- <charset>utf-8</charset> -->
-            <charset>gbk</charset>
+            <charset>utf-8</charset>
+            <!-- <charset>gbk</charset> -->
         </encoder>
     </appender>
  

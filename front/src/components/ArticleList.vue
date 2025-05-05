@@ -122,8 +122,7 @@ async function getArticleList() {
             } else {
                 return;
             }
-        }
-        else {
+        } else {
             router.push("/PageNotFound")
         }
         
@@ -144,7 +143,7 @@ async function getArticleList() {
             }
         }
     } catch (error) {
-        console.error('错误信息:', error)
+        // console.error('错误信息:', error)
         ElMessage.error("获取文章失败")
     }
 }
@@ -328,4 +327,9 @@ async function deleteArticle(articleUid: string) {
         font-size: 12px;
     }
 }
+
+.el-pagination {
+    padding-bottom: 30px;
+}
+
 </style>

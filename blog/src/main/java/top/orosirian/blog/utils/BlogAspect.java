@@ -70,7 +70,7 @@ public class BlogAspect {
     public void afterSearchTitleArticleListSuccess(JoinPoint joinPoint, Object result) {
         Object[] args = joinPoint.getArgs();
         Integer currentPage = (Integer) args[0];
-        String title = (String) args[0];
+        String title = (String) args[2];
         log.info("获取搜索{}第{}页文章成功", title, currentPage);
     }
 

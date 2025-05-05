@@ -49,7 +49,6 @@ onMounted(async () => {
                 }
             }
         })
-        vditor.value.setTheme("dark", "dark")
     } else {
         router.push("/PageNotFound")
     }
@@ -76,9 +75,9 @@ const userStoreObject = useUserStore()
 async function insertImage(files: File[]) {
     try {
         const response = await uploadImageApi(files[0]);
-        vditor.value.insertValue(`![图片](${response.url})`);
+        vditor.value.insertValue(`![图片](${response.data.url})`);
         ElMessage.success("图片上传成功");
-        return response.url; // 返回图片 URL
+        return response.data.url; // 返回图片 URL
     } catch (error) {
         ElMessage.error("图片上传失败");
         console.error('错误信息:', error);
@@ -192,6 +191,13 @@ async function submit() {
     /* padding-right: 20%; */
     padding-bottom: 20px;
     display: flex;
+}
+
+.vditor-reset a, .vditor-ir__link {
+    color: #1890ff;
+    text-decoration: none;
+    outline: none;
+    cursor: pointer;
 }
 
 </style>

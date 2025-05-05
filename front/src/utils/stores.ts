@@ -75,7 +75,7 @@ export const useUserStore = defineStore('auth', () => {
     function loadBackground() {
         try {
             const savedBg = getBackground() || '';
-            background.value = savedBg ? backgroundMap[savedBg] : backgroundMap['Default'];
+            background.value = savedBg ? backgroundMap[savedBg] : backgroundMap['Mount'];
         } catch (e) {
             console.error('读取本地存储失败:', e);
         }

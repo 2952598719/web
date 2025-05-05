@@ -59,7 +59,8 @@ CREATE TABLE t_article(
     update_time DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY(article_uid),
     INDEX user_uid_index(user_uid),
-    INDEX article_type_index(article_type)
+    INDEX article_type_index(article_type),
+    FULLTEXT INDEX title_fulltext_index(title) WITH PARSER ngram  -- 用于全文搜索，ngram是一种分词器，用于将文本分割成多个单词，然后进行索引
 ) COMMENT '文章表';
 
 DROP TABLE IF EXISTS t_comment;
